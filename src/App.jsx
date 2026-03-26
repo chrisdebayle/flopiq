@@ -1,3 +1,4 @@
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import DrillPage from './features/drills/DrillPage.jsx';
 import './App.css';
 
@@ -16,6 +17,7 @@ function App() {
       <main className="app-main">
         <DrillPage />
       </main>
+      <SpeedInsights />
     </div>
   );
 }
