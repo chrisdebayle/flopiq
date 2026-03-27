@@ -10,6 +10,7 @@ import SessionSummary from '../../components/SessionSummary.jsx';
 import useGameState from '../../hooks/useGameState.js';
 import { updateLeaderboardEntry } from '../../data/leaderboard.js';
 import { SCENARIOS, getRandomScenario } from '../../data/scenarios.js';
+import { OPPONENT_ARCHETYPES } from '../../data/gamification.js';
 import { CHART_LOOSE, CHART_TIGHT, CHART_FACING_RAISE, getHandKey } from '../../data/handCharts.js';
 
 const DIFFICULTIES = ['all', 'beginner', 'intermediate', 'advanced'];
@@ -250,14 +251,26 @@ function DrillPage({ user }) {
         }}>
           {scenario.description}
         </p>
-        {scenario.toCall > 0 && (
-          <span style={{
-            background: 'rgba(243,156,18,0.2)', color: '#f39c12',
-            padding: '2px 10px', borderRadius: 10, fontSize: isMobile ? 12 : 13, fontWeight: 700,
-          }}>
-            {scenario.toCall} BB to call
-          </span>
-        )}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+          {scenario.opponentType && OPPONENT_ARCHETYPES[scenario.opponentType] && (
+            <span style={{
+              background: `${OPPONENT_ARCHETYPES[scenario.opponentType].color}22`,
+              color: OPPONENT_ARCHETYPES[scenario.opponentType].color,
+              padding: '3px 12px', borderRadius: 10, fontSize: isMobile ? 12 : 13, fontWeight: 700,
+              border: `1px solid ${OPPONENT_ARCHETYPES[scenario.opponentType].color}44`,
+            }}>
+              {OPPONENT_ARCHETYPES[scenario.opponentType].emoji} vs {OPPONENT_ARCHETYPES[scenario.opponentType].shortLabel}
+            </span>
+          )}
+          {scenario.toCall > 0 && (
+            <span style={{
+              background: 'rgba(243,156,18,0.2)', color: '#f39c12',
+              padding: '3px 12px', borderRadius: 10, fontSize: isMobile ? 12 : 13, fontWeight: 700,
+            }}>
+              {scenario.toCall} BB to call
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Action Buttons */}

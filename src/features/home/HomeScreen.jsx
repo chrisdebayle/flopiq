@@ -169,10 +169,10 @@ export default function HomeScreen({ user, persistent, onStartDrills, onLogout }
             <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginBottom: 4 }} />
 
             {[
-              { icon: '\u{1F3AF}', text: `${SCENARIOS.length} real scenarios. Real pressure. Train the decisions that separate winners from break-even players.` },
+              { icon: '\u{1F3AF}', text: `${SCENARIOS.length} scenarios across 5 opponent archetypes. Read your opponent. Exploit their leaks. Make the right decision.` },
+              { icon: '\u{1F525}', text: 'Face Nits, Calling Stations, TAGs, LAGs, and ABC players — each demands a different strategy.' },
               { icon: '\u{1F4C8}', text: 'Track streaks, earn XP, and climb the ranks from Fish to GTO Wizard.' },
               { icon: '\u{1F9E0}', text: 'Built for grinders who want an edge — and beginners ready to build one.' },
-              { icon: '\u26A1', text: 'Fast reps, instant feedback. No fluff. Just sharper poker instincts, every session.' },
             ].map((item, i) => (
               <div key={i} style={{
                 display: 'flex', alignItems: 'flex-start', gap: isMobile ? 10 : 12,

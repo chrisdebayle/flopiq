@@ -68,3 +68,47 @@ export function getSessionGrade(correct, total) {
 
 // ── Streak Milestones (trigger celebration) ──
 export const STREAK_MILESTONES = [3, 5, 10, 15, 20, 25, 30, 50];
+
+// ── Opponent Archetypes ──
+export const OPPONENT_ARCHETYPES = {
+  nit: {
+    label: 'Nit / Rock',
+    shortLabel: 'Nit',
+    emoji: '🪨',
+    color: '#78909c',
+    description: 'Plays very few hands. Rarely bluffs. When they bet big, believe them.',
+    spotting: 'Long stretches of folding, oversized opens, 3-bets only with premiums, aggression = the nuts.',
+  },
+  fish: {
+    label: 'Calling Station',
+    shortLabel: 'Fish',
+    emoji: '🐟',
+    color: '#4fc3f7',
+    description: 'Calls too often, rarely raises. Driven by hope, not math.',
+    spotting: 'Calls every open, rarely 3-bets, calls multiple streets with weak hands, almost never bluffs.',
+  },
+  tag: {
+    label: 'TAG (Tight-Aggressive)',
+    shortLabel: 'TAG',
+    emoji: '🎯',
+    color: '#66bb6a',
+    description: 'Selective preflop, aggressive postflop. Closest to balanced play.',
+    spotting: 'Opens 15-25% of hands, c-bets favorable textures, checks back unfavorable ones, coherent showdowns.',
+  },
+  lag: {
+    label: 'LAG (Loose-Aggressive)',
+    shortLabel: 'LAG',
+    emoji: '🔥',
+    color: '#ff7043',
+    description: 'Wide range, constant pressure. Can have anything in any spot.',
+    spotting: 'Opens 30%+ of hands, 3-bets wide, double/triple barrels often, polarized river sizing.',
+  },
+  weakTight: {
+    label: 'Weak-Tight / ABC',
+    shortLabel: 'ABC',
+    emoji: '📖',
+    color: '#ab47bc',
+    description: 'Knows basics but plays predictably. Bet = strength, check = weakness.',
+    spotting: 'Always c-bets in position, never out of position. Check-back = range cap. Rarely bluffs.',
+  },
+};
