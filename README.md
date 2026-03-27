@@ -6,7 +6,7 @@ Interactive poker decision training app that builds disciplined players through 
 
 ## Features
 
-- **Decision Drills** — 33 scenarios across preflop, flop, turn, and river
+- **Decision Drills** — 103 scenarios across preflop, flop, turn, and river
 - **Smart Bet Typing** — Context-aware dropdown (C-Bet, Value Bet, Semi-Bluff, Bluff, etc.)
 - **XP & Levels** — Progress from Fish to GTO Wizard across 8 ranks
 - **Streak System** — Vegas-style firework celebrations at milestones with XP multipliers
