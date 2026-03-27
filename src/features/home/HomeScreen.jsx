@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getLevel } from '../../data/gamification.js';
 import { getUserRank } from '../../data/leaderboard.js';
+import { SCENARIOS } from '../../data/scenarios.js';
 import Leaderboard from '../../components/Leaderboard.jsx';
 
 function useIsMobile() {
@@ -168,7 +169,7 @@ export default function HomeScreen({ user, persistent, onStartDrills, onLogout }
             <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginBottom: 4 }} />
 
             {[
-              { icon: '\u{1F3AF}', text: 'Real scenarios. Real pressure. Train the decisions that separate winners from break-even players.' },
+              { icon: '\u{1F3AF}', text: `${SCENARIOS.length} real scenarios. Real pressure. Train the decisions that separate winners from break-even players.` },
               { icon: '\u{1F4C8}', text: 'Track streaks, earn XP, and climb the ranks from Fish to GTO Wizard.' },
               { icon: '\u{1F9E0}', text: 'Built for grinders who want an edge — and beginners ready to build one.' },
               { icon: '\u26A1', text: 'Fast reps, instant feedback. No fluff. Just sharper poker instincts, every session.' },
