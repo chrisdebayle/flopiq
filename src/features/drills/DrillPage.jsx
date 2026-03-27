@@ -8,6 +8,7 @@ import StreakDisplay from '../../components/StreakDisplay.jsx';
 import StreakCelebration from '../../components/StreakCelebration.jsx';
 import SessionSummary from '../../components/SessionSummary.jsx';
 import useGameState from '../../hooks/useGameState.js';
+import { updateLeaderboardEntry } from '../../data/leaderboard.js';
 import { SCENARIOS, getRandomScenario } from '../../data/scenarios.js';
 import { CHART_LOOSE, CHART_TIGHT, CHART_FACING_RAISE, getHandKey } from '../../data/handCharts.js';
 
@@ -23,7 +24,7 @@ function useIsMobile() {
   return isMobile;
 }
 
-function DrillPage() {
+function DrillPage({ user }) {
   const [difficulty, setDifficulty] = useState('all');
   const [scenario, setScenario] = useState(() => getRandomScenario());
   const [selectedAction, setSelectedAction] = useState(null);
@@ -114,6 +115,14 @@ function DrillPage() {
 
   const handleEndSession = () => {
     endSession();
+    // Sync to leaderboard with best session accuracy
+    if (user) {
+      const sessionPct = session.total > 0 ? Math.round((session.correct / session.total) * 100) : 0;
+      updateLeaderboardEntry(user.id, user.displayName, {
+        ...persistent,
+        bestSessionPct: sessionPct,
+      });
+    }
     setShowSessionSummary(true);
   };
 
