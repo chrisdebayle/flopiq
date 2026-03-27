@@ -1,11 +1,54 @@
-import { getTopN, getUserRank } from '../data/leaderboard.js';
+import { useState, useEffect } from 'react';
+import { getLeaderboard } from '../lib/supabase.js';
+import { getLevel } from '../data/gamification.js';
 
 const RANK_MEDALS = { 1: '\uD83E\uDD47', 2: '\uD83E\uDD48', 3: '\uD83E\uDD49' };
 
 export default function Leaderboard({ userId, isMobile }) {
-  const top10 = getTopN(10);
-  const userRank = getUserRank(userId);
+  const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    async function fetch() {
+      try {
+        const data = await getLeaderboard(10);
+        if (mounted) setEntries(data);
+      } catch (err) {
+        console.warn('Leaderboard fetch error:', err.message);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+    fetch();
+    return () => { mounted = false; };
+  }, []);
+
+  // Enrich entries with level info
+  const top10 = entries.map((entry, i) => ({
+    ...entry,
+    userId: entry.id,
+    displayName: entry.display_name,
+    totalXp: entry.total_xp,
+    bestStreak: entry.best_streak,
+    bestSessionPct: entry.best_session_pct,
+    rank: i + 1,
+    level: getLevel(entry.total_xp),
+  }));
+
   const userInTop10 = top10.some(e => e.userId === userId);
+  const userEntry = top10.find(e => e.userId === userId);
+
+  if (loading) {
+    return (
+      <div style={{
+        textAlign: 'center', padding: '24px 16px',
+        color: '#556', fontSize: 14,
+      }}>
+        Loading leaderboard...
+      </div>
+    );
+  }
 
   if (top10.length === 0) {
     return (
@@ -137,29 +180,6 @@ export default function Leaderboard({ userId, isMobile }) {
           );
         })}
       </div>
-
-      {/* User rank if not in top 10 */}
-      {userRank && !userInTop10 && (
-        <div style={{
-          marginTop: 8, padding: isMobile ? '8px 10px' : '10px 14px',
-          background: 'rgba(41,128,185,0.08)',
-          borderRadius: 10, border: '1px solid rgba(41,128,185,0.15)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 13, color: '#667', fontWeight: 700 }}>
-              #{userRank.rank}
-            </span>
-            <span style={{ fontSize: 14 }}>{userRank.level.emoji}</span>
-            <span style={{ fontSize: 14, color: '#5dade2', fontWeight: 700 }}>
-              {userRank.displayName}
-            </span>
-          </div>
-          <span style={{ fontSize: 13, color: '#aab', fontWeight: 700 }}>
-            {userRank.compositeScore.toLocaleString()}
-          </span>
-        </div>
-      )}
     </div>
   );
 }

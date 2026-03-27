@@ -8,38 +8,65 @@ const CARDS = [
   { rank: 'A', suit: '\u2665', color: '#e74c3c' },
 ];
 
-export default function WelcomeScreen({ onLogin }) {
-  const [step, setStep] = useState(0); // 0=cards dealing, 1=branding, 2=tagline, 3=form
-  const [name, setName] = useState('');
+export default function WelcomeScreen({ onLogin, onRegister, authError, setAuthError }) {
+  const [step, setStep] = useState(0);
+  const [mode, setMode] = useState('login'); // 'login' or 'register'
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [cardsDealt, setCardsDealt] = useState(0);
-  const [error, setError] = useState('');
+  const [localError, setLocalError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const error = authError || localError;
 
   useEffect(() => {
-    // Stagger card dealing
     const timers = [];
     CARDS.forEach((_, i) => {
       timers.push(setTimeout(() => setCardsDealt(i + 1), 150 + i * 180));
     });
-    // Then reveal branding
     timers.push(setTimeout(() => setStep(1), 900));
     timers.push(setTimeout(() => setStep(2), 1400));
     timers.push(setTimeout(() => setStep(3), 1900));
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    const trimmed = name.trim();
-    if (!trimmed) {
-      setError('Enter a display name');
-      return;
-    }
-    if (trimmed.length > 20) {
-      setError('20 characters max');
-      return;
-    }
-    onLogin(trimmed);
+  function clearErrors() {
+    setLocalError('');
+    if (setAuthError) setAuthError(null);
   }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    clearErrors();
+
+    if (!email.trim()) { setLocalError('Enter your email'); return; }
+    if (!password) { setLocalError('Enter your password'); return; }
+    if (password.length < 6) { setLocalError('Password must be at least 6 characters'); return; }
+    if (mode === 'register' && !displayName.trim()) { setLocalError('Enter a display name'); return; }
+    if (mode === 'register' && displayName.trim().length > 20) { setLocalError('Display name: 20 characters max'); return; }
+
+    setSubmitting(true);
+    try {
+      if (mode === 'login') {
+        await onLogin(email.trim(), password);
+      } else {
+        await onRegister(email.trim(), password, displayName.trim());
+      }
+    } catch {
+      // Error is set via authError prop
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  const inputStyle = (hasError) => ({
+    width: '100%', padding: '14px 18px', fontSize: 15, fontWeight: 600,
+    borderRadius: 12, border: `2px solid ${hasError ? '#e74c3c' : 'rgba(255,255,255,0.12)'}`,
+    background: 'rgba(255,255,255,0.06)', color: '#fff',
+    outline: 'none', transition: 'border-color 0.2s ease',
+    boxSizing: 'border-box',
+  });
 
   return (
     <div style={{
@@ -65,7 +92,6 @@ export default function WelcomeScreen({ onLogin }) {
           <div key={i} style={{
             width: 52, height: 74, borderRadius: 8,
             background: i < cardsDealt ? '#fff' : 'transparent',
-            border: i < cardsDealt ? 'none' : 'none',
             display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center',
             transform: i < cardsDealt
@@ -126,47 +152,96 @@ export default function WelcomeScreen({ onLogin }) {
         The pre-game warmup serious players don&apos;t skip.
       </p>
 
-      {/* Login form */}
+      {/* Auth form */}
       <form onSubmit={handleSubmit} style={{
         marginTop: 32, display: 'flex', flexDirection: 'column',
-        alignItems: 'center', gap: 12, width: '100%', maxWidth: 320,
+        alignItems: 'center', gap: 10, width: '100%', maxWidth: 320,
         opacity: step >= 3 ? 1 : 0,
         transform: step >= 3 ? 'translateY(0)' : 'translateY(20px)',
         transition: 'all 0.5s ease',
       }}>
-        <input
-          type="text"
-          value={name}
-          onChange={e => { setName(e.target.value); setError(''); }}
-          placeholder="Enter your player name"
-          maxLength={20}
-          autoFocus={step >= 3}
-          style={{
-            width: '100%', padding: '14px 18px', fontSize: 16, fontWeight: 600,
-            borderRadius: 12, border: `2px solid ${error ? '#e74c3c' : 'rgba(255,255,255,0.12)'}`,
-            background: 'rgba(255,255,255,0.06)', color: '#fff',
-            outline: 'none', textAlign: 'center',
-            transition: 'border-color 0.2s ease',
-          }}
-          onFocus={e => { if (!error) e.target.style.borderColor = '#2980b9'; }}
-          onBlur={e => { if (!error) e.target.style.borderColor = 'rgba(255,255,255,0.12)'; }}
-        />
-        {error && (
-          <span style={{ color: '#e74c3c', fontSize: 12, fontWeight: 600 }}>{error}</span>
+        {/* Mode toggle */}
+        <div style={{
+          display: 'flex', gap: 0, marginBottom: 4, width: '100%',
+          borderRadius: 10, overflow: 'hidden',
+          border: '1px solid rgba(255,255,255,0.12)',
+        }}>
+          {['login', 'register'].map(m => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => { setMode(m); clearErrors(); }}
+              style={{
+                flex: 1, padding: '10px 0', fontSize: 13, fontWeight: 700,
+                border: 'none', cursor: 'pointer',
+                textTransform: 'uppercase', letterSpacing: 0.5,
+                background: mode === m ? 'rgba(41,128,185,0.3)' : 'rgba(255,255,255,0.04)',
+                color: mode === m ? '#fff' : '#667',
+                transition: 'all 0.2s',
+              }}
+            >
+              {m === 'login' ? 'Sign In' : 'Sign Up'}
+            </button>
+          ))}
+        </div>
+
+        {mode === 'register' && (
+          <input
+            type="text"
+            value={displayName}
+            onChange={e => { setDisplayName(e.target.value); clearErrors(); }}
+            placeholder="Display name"
+            maxLength={20}
+            style={inputStyle(false)}
+            onFocus={e => e.target.style.borderColor = '#2980b9'}
+            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.12)'}
+          />
         )}
-        <button type="submit" style={{
+
+        <input
+          type="email"
+          value={email}
+          onChange={e => { setEmail(e.target.value); clearErrors(); }}
+          placeholder="Email"
+          autoComplete="email"
+          style={inputStyle(false)}
+          onFocus={e => e.target.style.borderColor = '#2980b9'}
+          onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.12)'}
+        />
+
+        <input
+          type="password"
+          value={password}
+          onChange={e => { setPassword(e.target.value); clearErrors(); }}
+          placeholder="Password"
+          autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+          style={inputStyle(false)}
+          onFocus={e => e.target.style.borderColor = '#2980b9'}
+          onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.12)'}
+        />
+
+        {error && (
+          <span style={{ color: '#e74c3c', fontSize: 12, fontWeight: 600, textAlign: 'center' }}>
+            {error}
+          </span>
+        )}
+
+        <button type="submit" disabled={submitting} style={{
           width: '100%', padding: '14px 0', fontSize: 16, fontWeight: 800,
           borderRadius: 12, border: 'none',
-          background: 'linear-gradient(135deg, #2980b9, #2471a3)',
-          color: '#fff', cursor: 'pointer', letterSpacing: 0.5,
-          textTransform: 'uppercase',
+          background: submitting
+            ? 'rgba(41,128,185,0.4)'
+            : 'linear-gradient(135deg, #2980b9, #2471a3)',
+          color: '#fff', cursor: submitting ? 'not-allowed' : 'pointer',
+          letterSpacing: 0.5, textTransform: 'uppercase',
           boxShadow: '0 4px 16px rgba(41,128,185,0.3)',
           transition: 'all 0.2s ease',
+          opacity: submitting ? 0.7 : 1,
         }}
-          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
+          onMouseEnter={e => { if (!submitting) e.currentTarget.style.transform = 'scale(1.02)'; }}
           onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
         >
-          Take Your Seat
+          {submitting ? 'Loading...' : mode === 'login' ? 'Take Your Seat' : 'Create Account'}
         </button>
       </form>
 

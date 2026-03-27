@@ -1,56 +1,114 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import useAuth from './hooks/useAuth.js';
 import WelcomeScreen from './features/welcome/WelcomeScreen.jsx';
 import HomeScreen from './features/home/HomeScreen.jsx';
 import DrillPage from './features/drills/DrillPage.jsx';
-import { updateLeaderboardEntry } from './data/leaderboard.js';
+import { getProfile, upsertProfile, trackEvent } from './lib/supabase.js';
 import './App.css';
 
 function App() {
-  const { user, login, logout, isLoggedIn } = useAuth();
-  const [screen, setScreen] = useState(isLoggedIn ? 'home' : 'welcome');
+  const { user, login, register, logout, isLoggedIn, loading, error: authError, setError: setAuthError } = useAuth();
+  const [screen, setScreen] = useState('welcome');
+  const [persistent, setPersistent] = useState({
+    totalXp: 0, bestStreakAllTime: 0, totalSessions: 0,
+    totalCorrect: 0, totalAnswered: 0, bestSessionPct: 0,
+  });
 
-  // Load persistent stats for home screen
-  const loadPersistent = () => {
-    try {
-      return {
-        totalXp: parseInt(localStorage.getItem('flopiq_xp') || '0', 10),
-        bestStreakAllTime: parseInt(localStorage.getItem('flopiq_best_streak') || '0', 10),
-        ...(JSON.parse(localStorage.getItem('flopiq_lifetime') || '{"totalSessions":0,"totalCorrect":0,"totalAnswered":0}')),
-      };
-    } catch {
-      return { totalXp: 0, bestStreakAllTime: 0, totalSessions: 0, totalCorrect: 0, totalAnswered: 0 };
+  // Once user is loaded, determine screen and fetch profile
+  useEffect(() => {
+    if (loading) return;
+    if (isLoggedIn) {
+      setScreen('home');
+      // Fetch profile from Supabase
+      getProfile(user.id).then(profile => {
+        if (profile) {
+          setPersistent({
+            totalXp: profile.total_xp || 0,
+            bestStreakAllTime: profile.best_streak || 0,
+            totalSessions: profile.sessions_played || 0,
+            totalCorrect: profile.total_correct || 0,
+            totalAnswered: profile.total_answered || 0,
+            bestSessionPct: profile.best_session_pct || 0,
+          });
+        }
+      }).catch(err => console.warn('Profile fetch error:', err.message));
+      trackEvent(user.id, 'login', { method: 'session_restore' });
+    } else {
+      setScreen('welcome');
     }
-  };
+  }, [loading, isLoggedIn, user]);
 
-  function handleLogin(displayName) {
-    const u = login(displayName);
-    // Sync existing stats to leaderboard
-    const stats = loadPersistent();
-    updateLeaderboardEntry(u.id, displayName, stats);
-    setScreen('home');
+  async function handleLogin(email, password) {
+    const u = await login(email, password);
+    if (u) {
+      trackEvent(u.id, 'login', { method: 'email' });
+    }
   }
 
-  function handleLogout() {
-    logout();
-    setScreen('welcome');
+  async function handleRegister(email, password, displayName) {
+    const result = await register(email, password, displayName);
+    if (result) {
+      trackEvent(result.id, 'signup', { method: 'email' });
+    }
+  }
+
+  async function handleLogout() {
+    if (user) trackEvent(user.id, 'logout', {});
+    await logout();
+    setPersistent({
+      totalXp: 0, bestStreakAllTime: 0, totalSessions: 0,
+      totalCorrect: 0, totalAnswered: 0, bestSessionPct: 0,
+    });
   }
 
   function handleStartDrills() {
+    if (user) trackEvent(user.id, 'start_drills', {});
     setScreen('drills');
   }
 
-  function handleBackToHome() {
-    // Sync latest stats to leaderboard when returning
+  async function handleBackToHome() {
+    // Refresh profile from Supabase to get latest stats
     if (user) {
-      const stats = loadPersistent();
-      updateLeaderboardEntry(user.id, user.displayName, stats);
+      try {
+        const profile = await getProfile(user.id);
+        if (profile) {
+          setPersistent({
+            totalXp: profile.total_xp || 0,
+            bestStreakAllTime: profile.best_streak || 0,
+            totalSessions: profile.sessions_played || 0,
+            totalCorrect: profile.total_correct || 0,
+            totalAnswered: profile.total_answered || 0,
+            bestSessionPct: profile.best_session_pct || 0,
+          });
+        }
+      } catch (err) {
+        console.warn('Profile refresh error:', err.message);
+      }
     }
     setScreen('home');
   }
 
+  // Show loading screen while checking auth
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: '#0a0e14', color: '#556', fontSize: 16, fontWeight: 600,
+      }}>
+        Loading...
+      </div>
+    );
+  }
+
   if (screen === 'welcome' || !isLoggedIn) {
-    return <WelcomeScreen onLogin={handleLogin} />;
+    return (
+      <WelcomeScreen
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+        authError={authError}
+        setAuthError={setAuthError}
+      />
+    );
   }
 
   if (screen === 'home') {
@@ -67,7 +125,7 @@ function App() {
         <main className="app-main">
           <HomeScreen
             user={user}
-            persistent={loadPersistent()}
+            persistent={persistent}
             onStartDrills={handleStartDrills}
             onLogout={handleLogout}
           />
@@ -93,7 +151,7 @@ function App() {
         </div>
       </header>
       <main className="app-main">
-        <DrillPage user={user} />
+        <DrillPage user={user} persistent={persistent} />
       </main>
     </div>
   );

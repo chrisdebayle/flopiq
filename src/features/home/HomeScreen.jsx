@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getLevel } from '../../data/gamification.js';
-import { getUserRank } from '../../data/leaderboard.js';
+import { getLevel, OPPONENT_ARCHETYPES } from '../../data/gamification.js';
 import { SCENARIOS } from '../../data/scenarios.js';
 import Leaderboard from '../../components/Leaderboard.jsx';
 
@@ -17,7 +16,6 @@ function useIsMobile() {
 export default function HomeScreen({ user, persistent, onStartDrills, onLogout }) {
   const isMobile = useIsMobile();
   const level = getLevel(persistent.totalXp);
-  const userRank = getUserRank(user.id);
   const accuracy = persistent.totalAnswered > 0
     ? Math.round((persistent.totalCorrect / persistent.totalAnswered) * 100)
     : 0;
@@ -25,6 +23,7 @@ export default function HomeScreen({ user, persistent, onStartDrills, onLogout }
   const [aboutOpen, setAboutOpen] = useState(() => {
     return !localStorage.getItem('flopiq_seen_about');
   });
+  const [archetypesOpen, setArchetypesOpen] = useState(false);
 
   return (
     <div style={{ maxWidth: 900, margin: '0 auto' }}>
@@ -59,7 +58,6 @@ export default function HomeScreen({ user, persistent, onStartDrills, onLogout }
             fontSize: isMobile ? 12 : 13, color: '#8899aa', fontWeight: 600, marginTop: 2,
           }}>
             {level.name} &middot; {persistent.totalXp.toLocaleString()} XP
-            {userRank && ` \u00B7 Rank #${userRank.rank}`}
           </div>
         </div>
 
@@ -185,6 +183,83 @@ export default function HomeScreen({ user, persistent, onStartDrills, onLogout }
                 }}>
                   {item.text}
                 </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Player Archetypes dropdown */}
+      <div style={{
+        background: 'rgba(255,255,255,0.04)',
+        borderRadius: 14,
+        border: '1px solid rgba(255,255,255,0.06)',
+        marginBottom: isMobile ? 16 : 24,
+        overflow: 'hidden',
+      }}>
+        <button onClick={() => setArchetypesOpen(!archetypesOpen)} style={{
+          width: '100%', display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: isMobile ? '12px 14px' : '14px 18px',
+          background: 'none', border: 'none', cursor: 'pointer',
+        }}>
+          <span style={{
+            fontSize: isMobile ? 14 : 15, fontWeight: 800, color: '#fff',
+            letterSpacing: 0.3,
+          }}>
+            What are Player Archetypes?
+          </span>
+          <span style={{
+            fontSize: 14, color: '#556', fontWeight: 600,
+            transform: archetypesOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.2s ease',
+          }}>
+            &#9662;
+          </span>
+        </button>
+
+        <div style={{
+          maxHeight: archetypesOpen ? 600 : 0,
+          opacity: archetypesOpen ? 1 : 0,
+          overflow: 'hidden',
+          transition: 'max-height 0.3s ease, opacity 0.25s ease',
+        }}>
+          <div style={{
+            padding: isMobile ? '0 14px 16px' : '0 18px 20px',
+            display: 'flex', flexDirection: 'column', gap: isMobile ? 8 : 10,
+          }}>
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginBottom: 4 }} />
+
+            {Object.entries(OPPONENT_ARCHETYPES).map(([key, arch]) => (
+              <div key={key} style={{
+                display: 'flex', alignItems: 'flex-start', gap: isMobile ? 10 : 12,
+                padding: isMobile ? '8px 10px' : '10px 14px',
+                background: `${arch.color}0a`,
+                borderRadius: 10,
+                border: `1px solid ${arch.color}22`,
+              }}>
+                <span style={{ fontSize: isMobile ? 20 : 24, lineHeight: 1.2, flexShrink: 0 }}>
+                  {arch.emoji}
+                </span>
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontSize: isMobile ? 13 : 14, fontWeight: 700, color: arch.color,
+                    marginBottom: 2,
+                  }}>
+                    {arch.label}
+                  </div>
+                  <div style={{
+                    fontSize: isMobile ? 12 : 13, color: '#b0bec5', lineHeight: 1.4,
+                  }}>
+                    {arch.description}
+                  </div>
+                  <div style={{
+                    fontSize: isMobile ? 11 : 12, color: '#78909c', lineHeight: 1.4,
+                    marginTop: 3, fontStyle: 'italic',
+                  }}>
+                    {arch.spotting}
+                  </div>
+                </div>
               </div>
             ))}
           </div>

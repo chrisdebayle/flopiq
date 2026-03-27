@@ -1,50 +1,113 @@
-import { useState, useCallback } from 'react';
-
-const LS_KEY_USER = 'flopiq_user';
-
-function loadUser() {
-  try {
-    const data = localStorage.getItem(LS_KEY_USER);
-    return data ? JSON.parse(data) : null;
-  } catch {
-    return null;
-  }
-}
-
-function saveUser(user) {
-  localStorage.setItem(LS_KEY_USER, JSON.stringify(user));
-}
-
-function generateId() {
-  return 'u_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-}
+import { useState, useCallback, useEffect } from 'react';
+import { supabase, signUp, signIn, signOut, getProfile } from '../lib/supabase.js';
 
 export default function useAuth() {
-  const [user, setUser] = useState(loadUser);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const login = useCallback((displayName) => {
-    // Check if returning user with this name exists
-    const existing = loadUser();
-    if (existing && existing.displayName === displayName) {
-      setUser(existing);
-      return existing;
+  // On mount, check for existing Supabase session
+  useEffect(() => {
+    let mounted = true;
+
+    async function init() {
+      try {
+        if (!supabase) { setLoading(false); return; }
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user && mounted) {
+          const profile = await getProfile(session.user.id);
+          setUser({
+            id: session.user.id,
+            email: session.user.email,
+            displayName: profile?.display_name || session.user.user_metadata?.display_name || 'Player',
+          });
+        }
+      } catch (err) {
+        console.warn('Auth init error:', err.message);
+      } finally {
+        if (mounted) setLoading(false);
+      }
     }
-    // New user or different name
-    const newUser = {
-      id: existing?.id || generateId(),
-      displayName: displayName.trim(),
-      createdAt: existing?.createdAt || Date.now(),
-      lastLogin: Date.now(),
+
+    init();
+
+    // Listen for auth state changes (login/logout from other tabs)
+    const { data: { subscription } } = supabase
+      ? supabase.auth.onAuthStateChange(async (event, session) => {
+          if (!mounted) return;
+          if (event === 'SIGNED_IN' && session?.user) {
+            const profile = await getProfile(session.user.id);
+            setUser({
+              id: session.user.id,
+              email: session.user.email,
+              displayName: profile?.display_name || session.user.user_metadata?.display_name || 'Player',
+            });
+          } else if (event === 'SIGNED_OUT') {
+            setUser(null);
+          }
+        })
+      : { subscription: null };
+
+    return () => {
+      mounted = false;
+      subscription?.unsubscribe();
     };
-    saveUser(newUser);
-    setUser(newUser);
-    return newUser;
   }, []);
 
-  const logout = useCallback(() => {
-    setUser(null);
-    // Don't delete user data — just clear the session
+  const login = useCallback(async (email, password) => {
+    setError(null);
+    try {
+      const { session } = await signIn(email, password);
+      if (session?.user) {
+        const profile = await getProfile(session.user.id);
+        const u = {
+          id: session.user.id,
+          email: session.user.email,
+          displayName: profile?.display_name || 'Player',
+        };
+        setUser(u);
+        return u;
+      }
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
   }, []);
 
-  return { user, login, logout, isLoggedIn: !!user };
+  const register = useCallback(async (email, password, displayName) => {
+    setError(null);
+    try {
+      const { session, user: authUser } = await signUp(email, password, displayName);
+      // If email confirmation is disabled, session is returned immediately
+      if (session?.user) {
+        const u = {
+          id: session.user.id,
+          email: session.user.email,
+          displayName,
+        };
+        setUser(u);
+        return u;
+      }
+      // If email confirmation is enabled, user exists but no session yet
+      if (authUser) {
+        return { needsConfirmation: true, email };
+      }
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  }, []);
+
+  const logout = useCallback(async () => {
+    setError(null);
+    try {
+      await signOut();
+      setUser(null);
+    } catch (err) {
+      setError(err.message);
+    }
+  }, []);
+
+  return { user, login, register, logout, isLoggedIn: !!user, loading, error, setError };
 }

@@ -8,9 +8,10 @@ import StreakDisplay from '../../components/StreakDisplay.jsx';
 import StreakCelebration from '../../components/StreakCelebration.jsx';
 import SessionSummary from '../../components/SessionSummary.jsx';
 import useGameState from '../../hooks/useGameState.js';
-import { updateLeaderboardEntry } from '../../data/leaderboard.js';
+import { saveSession, saveScenarioResults, upsertProfile, trackEvent } from '../../lib/supabase.js';
 import { SCENARIOS, getRandomScenario } from '../../data/scenarios.js';
 import { OPPONENT_ARCHETYPES } from '../../data/gamification.js';
+import { getSessionGrade } from '../../data/gamification.js';
 import { CHART_LOOSE, CHART_TIGHT, CHART_FACING_RAISE, getHandKey } from '../../data/handCharts.js';
 
 const DIFFICULTIES = ['all', 'beginner', 'intermediate', 'advanced'];
@@ -25,7 +26,7 @@ function useIsMobile() {
   return isMobile;
 }
 
-function DrillPage({ user }) {
+function DrillPage({ user, persistent: parentPersistent }) {
   const [difficulty, setDifficulty] = useState('all');
   const [scenario, setScenario] = useState(() => getRandomScenario());
   const [selectedAction, setSelectedAction] = useState(null);
@@ -39,8 +40,13 @@ function DrillPage({ user }) {
 
   const {
     session, persistent, currentLevel, sessionGrade,
-    recordAnswer, endSession, resetSession,
-  } = useGameState();
+    recordAnswer, endSession, resetSession, syncPersistent,
+  } = useGameState(parentPersistent);
+
+  // Sync when parent persistent changes (e.g. after Supabase fetch)
+  useEffect(() => {
+    if (parentPersistent) syncPersistent(parentPersistent);
+  }, [parentPersistent, syncPersistent]);
 
   const isMobile = useIsMobile();
 
@@ -71,7 +77,12 @@ function DrillPage({ user }) {
 
     const result = recordAnswer(
       scenario.id, scenario.street, scenario.difficulty,
-      isCorrect, betTypeCorrect
+      isCorrect, betTypeCorrect,
+      {
+        actionChosen: action,
+        betTypeChosen: betType || null,
+        opponentType: scenario.opponentType || null,
+      }
     );
 
     setLastXpEarned(result.xpEarned);
@@ -114,16 +125,64 @@ function DrillPage({ user }) {
     advanced: '#e74c3c',
   };
 
-  const handleEndSession = () => {
+  const handleEndSession = async () => {
     endSession();
-    // Sync to leaderboard with best session accuracy
+
+    const sessionPct = session.total > 0 ? Math.round((session.correct / session.total) * 100) : 0;
+    const grade = getSessionGrade(session.correct, session.total);
+    const durationMs = Date.now() - session.startTime;
+
+    // Build category breakdown from history
+    const categoryBreakdown = {};
+    session.history.forEach(h => {
+      const key = h.street || 'unknown';
+      if (!categoryBreakdown[key]) categoryBreakdown[key] = { correct: 0, total: 0 };
+      categoryBreakdown[key].total++;
+      if (h.correct) categoryBreakdown[key].correct++;
+    });
+
+    // Save to Supabase
     if (user) {
-      const sessionPct = session.total > 0 ? Math.round((session.correct / session.total) * 100) : 0;
-      updateLeaderboardEntry(user.id, user.displayName, {
-        ...persistent,
-        bestSessionPct: sessionPct,
-      });
+      try {
+        // 1. Save session
+        const savedSession = await saveSession(user.id, {
+          correct: session.correct,
+          total: session.total,
+          grade: grade.letter,
+          xpEarned: session.xpEarnedThisSession,
+          bestStreak: session.bestStreakThisSession,
+          durationMs,
+          categoryBreakdown,
+        });
+
+        // 2. Save individual scenario results
+        if (savedSession && session.history.length > 0) {
+          await saveScenarioResults(user.id, savedSession.id, session.history);
+        }
+
+        // 3. Update profile stats
+        await upsertProfile(user.id, {
+          total_xp: persistent.totalXp,
+          best_streak: Math.max(persistent.bestStreakAllTime, session.bestStreakThisSession),
+          best_session_pct: Math.max(persistent.bestSessionPct || 0, sessionPct),
+          total_correct: persistent.totalCorrect,
+          total_answered: persistent.totalAnswered,
+          sessions_played: persistent.totalSessions,
+        });
+
+        trackEvent(user.id, 'session_complete', {
+          correct: session.correct,
+          total: session.total,
+          grade: grade.letter,
+          xpEarned: session.xpEarnedThisSession,
+          bestStreak: session.bestStreakThisSession,
+          durationMs,
+        });
+      } catch (err) {
+        console.warn('Session save error:', err.message);
+      }
     }
+
     setShowSessionSummary(true);
   };
 
