@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import Card from '../../components/Card.jsx';
 import ActionButtons from '../../components/ActionButtons.jsx';
 import HandRangeGrid from '../../components/HandRangeGrid.jsx';
@@ -26,7 +26,7 @@ function useIsMobile() {
   return isMobile;
 }
 
-function DrillPage({ user, persistent: parentPersistent }) {
+function DrillPage({ user, persistent: parentPersistent, onDashboard }) {
   const [difficulty, setDifficulty] = useState('all');
   const [scenario, setScenario] = useState(() => getRandomScenario());
   const [selectedAction, setSelectedAction] = useState(null);
@@ -112,6 +112,31 @@ function DrillPage({ user, persistent: parentPersistent }) {
     open: 'Open Raise', '3bet': '3-Bet', allin: 'All-In',
   };
 
+  // Determine which seat index the villain sits at
+  const villainSeatIdx = useMemo(() => {
+    const heroIdx = ['BTN', 'SB', 'BB', 'UTG', 'UTG1', 'MP', 'CO'].indexOf(scenario.position);
+    const idx = heroIdx >= 0 ? heroIdx : 0;
+    const rotated = [];
+    for (let i = 0; i < 7; i++) {
+      rotated.push(['BTN', 'SB', 'BB', 'UTG', 'UTG1', 'MP', 'CO'][(idx + i) % 7]);
+    }
+    // If actions exist, pick the last non-fold, non-hero position
+    if (scenario.actions && Object.keys(scenario.actions).length > 0) {
+      const actionPositions = Object.entries(scenario.actions)
+        .filter(([, a]) => a.type !== 'fold')
+        .map(([pos]) => pos);
+      if (actionPositions.length > 0) {
+        const villainPos = actionPositions[actionPositions.length - 1];
+        const si = rotated.indexOf(villainPos);
+        if (si > 0) return si;
+      }
+    }
+    // Default: pick seat across the table (index 3 or 4)
+    return 3;
+  }, [scenario.position, scenario.actions]);
+
+  const opponentArch = scenario.opponentType ? OPPONENT_ARCHETYPES[scenario.opponentType] : null;
+
   const disabledActions = [];
   if (scenario.toCall > 0) {
     disabledActions.push('check');
@@ -194,6 +219,29 @@ function DrillPage({ user, persistent: parentPersistent }) {
 
   return (
     <div style={{ maxWidth: 900, margin: '0 auto' }}>
+      {/* Dashboard button */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: isMobile ? 6 : 8 }}>
+        <button
+          onClick={onDashboard}
+          style={{
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            color: '#8899aa',
+            fontSize: isMobile ? 11 : 12,
+            fontWeight: 700,
+            padding: isMobile ? '4px 14px' : '5px 18px',
+            borderRadius: 8,
+            cursor: 'pointer',
+            letterSpacing: 0.3,
+            transition: 'all 0.15s ease',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = '#8899aa'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+        >
+          Dashboard
+        </button>
+      </div>
+
       {/* XP Bar */}
       <XpBar currentLevel={currentLevel} totalXp={persistent.totalXp} isMobile={isMobile} />
 
@@ -292,6 +340,8 @@ function DrillPage({ user, persistent: parentPersistent }) {
         toCall={scenario.toCall}
         street={scenario.street}
         actions={scenario.actions}
+        opponentArchetype={opponentArch}
+        villainSeatIdx={villainSeatIdx}
       />
 
       {/* Context description below table */}
@@ -310,26 +360,14 @@ function DrillPage({ user, persistent: parentPersistent }) {
         }}>
           {scenario.description}
         </p>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
-          {scenario.opponentType && OPPONENT_ARCHETYPES[scenario.opponentType] && (
-            <span style={{
-              background: `${OPPONENT_ARCHETYPES[scenario.opponentType].color}22`,
-              color: OPPONENT_ARCHETYPES[scenario.opponentType].color,
-              padding: '3px 12px', borderRadius: 10, fontSize: isMobile ? 12 : 13, fontWeight: 700,
-              border: `1px solid ${OPPONENT_ARCHETYPES[scenario.opponentType].color}44`,
-            }}>
-              {OPPONENT_ARCHETYPES[scenario.opponentType].emoji} vs {OPPONENT_ARCHETYPES[scenario.opponentType].shortLabel}
-            </span>
-          )}
-          {scenario.toCall > 0 && (
-            <span style={{
-              background: 'rgba(243,156,18,0.2)', color: '#f39c12',
-              padding: '3px 12px', borderRadius: 10, fontSize: isMobile ? 12 : 13, fontWeight: 700,
-            }}>
-              {scenario.toCall} BB to call
-            </span>
-          )}
-        </div>
+        {scenario.toCall > 0 && (
+          <span style={{
+            background: 'rgba(243,156,18,0.2)', color: '#f39c12',
+            padding: '3px 12px', borderRadius: 10, fontSize: isMobile ? 12 : 13, fontWeight: 700,
+          }}>
+            {scenario.toCall} BB to call
+          </span>
+        )}
       </div>
 
       {/* Action Buttons */}
@@ -395,13 +433,14 @@ function DrillPage({ user, persistent: parentPersistent }) {
                   </div>
                 )}
               </div>
-              {lastXpEarned > 0 && (
+              {lastXpEarned !== 0 && (
                 <div style={{
-                  background: 'rgba(255,215,0,0.15)', color: '#ffd700',
+                  background: lastXpEarned > 0 ? 'rgba(255,215,0,0.15)' : 'rgba(231,76,60,0.15)',
+                  color: lastXpEarned > 0 ? '#ffd700' : '#e74c3c',
                   padding: '4px 10px', borderRadius: 8, fontSize: 14, fontWeight: 800,
-                  border: '1px solid rgba(255,215,0,0.3)',
+                  border: `1px solid ${lastXpEarned > 0 ? 'rgba(255,215,0,0.3)' : 'rgba(231,76,60,0.3)'}`,
                 }}>
-                  +{lastXpEarned} XP
+                  {lastXpEarned > 0 ? '+' : ''}{lastXpEarned} XP
                 </div>
               )}
             </div>

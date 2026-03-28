@@ -103,7 +103,7 @@ function ChipStack({ type, amount, isMobile }) {
   );
 }
 
-function PokerTable({ heroPosition, holeCards, communityCards, potSize, stackSize, street, actions = {} }) {
+function PokerTable({ heroPosition, holeCards, communityCards, potSize, stackSize, street, actions = {}, opponentArchetype, villainSeatIdx }) {
   const isMobile = useIsMobile();
   const seats = useMemo(() => {
     const heroIdx = SEAT_ORDER_DEFAULT.indexOf(heroPosition);
@@ -267,6 +267,21 @@ function PokerTable({ heroPosition, holeCards, communityCards, potSize, stackSiz
                   <div style={{ color: '#99aabb', fontSize: isMobile ? 9 : 12, fontWeight: 700 }}>{pos}</div>
                   <div style={{ color: '#dde', fontSize: isMobile ? 10 : 13, fontWeight: 700 }}>{OPPONENT_STACKS[pos]} BB</div>
                 </div>
+                {opponentArchetype && seatIdx === villainSeatIdx && (
+                  <div style={{
+                    background: `${opponentArchetype.color}22`,
+                    color: opponentArchetype.color,
+                    padding: isMobile ? '1px 6px' : '2px 8px',
+                    borderRadius: 8,
+                    fontSize: isMobile ? 8 : 10,
+                    fontWeight: 700,
+                    border: `1px solid ${opponentArchetype.color}44`,
+                    marginTop: 2,
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {opponentArchetype.emoji} {opponentArchetype.shortLabel}
+                  </div>
+                )}
               </div>
             )}
           </div>

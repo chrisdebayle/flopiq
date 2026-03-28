@@ -36,10 +36,10 @@ export default function useGameState(initialPersistent) {
     const newStreak = isCorrect ? streakRef.current + 1 : 0;
     streakRef.current = newStreak;
 
-    // Compute XP synchronously
+    // Compute XP synchronously (floor at 0 — XP can't go negative)
     const xpEarned = calculateXp(difficulty, isCorrect, betTypeCorrect, newStreak);
     const prevXp = xpRef.current;
-    const newXp = prevXp + xpEarned;
+    const newXp = Math.max(0, prevXp + xpEarned);
     xpRef.current = newXp;
 
     // Check streak milestone

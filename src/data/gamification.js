@@ -1,5 +1,6 @@
 // ── XP Configuration ──
 export const XP_BASE = { beginner: 10, intermediate: 20, advanced: 35 };
+export const XP_PENALTY = { beginner: -5, intermediate: -10, advanced: -15 };
 export const XP_BET_TYPE_BONUS = 5;
 export const XP_STREAK_MULTIPLIERS = [
   { streak: 20, mult: 3.0 },
@@ -10,7 +11,7 @@ export const XP_STREAK_MULTIPLIERS = [
 ];
 
 export function calculateXp(difficulty, isCorrect, betTypeCorrect, currentStreak) {
-  if (!isCorrect) return 0;
+  if (!isCorrect) return XP_PENALTY[difficulty] || -5;
   const base = XP_BASE[difficulty] || 10;
   const bonus = betTypeCorrect ? XP_BET_TYPE_BONUS : 0;
   const subtotal = base + bonus;

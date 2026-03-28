@@ -131,19 +131,14 @@ function App() {
     <div className="app">
       <header className="app-header">
         <div className="header-content">
-          <div className="logo-row">
-            <button onClick={handleBackToHome} className="back-btn" aria-label="Back to home">
-              &larr;
-            </button>
-            <div className="logo">
-              <h1 className="logo-title">FlopIQ</h1>
-              <span className="logo-subtitle">Think Better. Stack Faster.</span>
-            </div>
+          <div className="logo">
+            <h1 className="logo-title">FlopIQ</h1>
+            <span className="logo-subtitle">Think Better. Stack Faster.</span>
           </div>
         </div>
       </header>
       <main className="app-main">
-        <DrillPage user={user} persistent={persistent} />
+        <DrillPage user={user} persistent={persistent} onDashboard={handleBackToHome} />
       </main>
     </div>
   );
