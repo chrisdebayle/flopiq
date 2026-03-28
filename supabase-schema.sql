@@ -117,6 +117,10 @@ create trigger on_auth_user_created
 -- Indexes for performance
 -- =====================================================
 
+-- Unique display names (case-insensitive) to prevent leaderboard duplicates
+create unique index if not exists idx_profiles_display_name_lower
+  on public.profiles(lower(display_name));
+
 create index if not exists idx_profiles_xp on public.profiles(total_xp desc);
 create index if not exists idx_sessions_user on public.sessions(user_id, created_at desc);
 create index if not exists idx_results_user on public.scenario_results(user_id, created_at desc);

@@ -13,8 +13,26 @@ export const supabase = supabaseUrl && supabaseAnonKey
 
 // ── Auth helpers (anonymous auth) ──
 
+export async function checkDisplayNameAvailable(displayName) {
+  if (!supabase) return true;
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id')
+    .ilike('display_name', displayName)
+    .limit(1);
+  if (error) throw error;
+  return !data || data.length === 0;
+}
+
 export async function signInAnonymously(displayName) {
   if (!supabase) throw new Error('Supabase not configured');
+
+  // Prevent duplicate display names
+  const available = await checkDisplayNameAvailable(displayName);
+  if (!available) {
+    throw new Error('That name is already taken. Pick another one.');
+  }
+
   const { data, error } = await supabase.auth.signInAnonymously({
     options: { data: { display_name: displayName } },
   });
