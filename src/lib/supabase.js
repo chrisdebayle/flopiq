@@ -13,30 +13,54 @@ export const supabase = supabaseUrl && supabaseAnonKey
 
 // ── Auth helpers (anonymous auth) ──
 
-export async function checkDisplayNameAvailable(displayName) {
-  if (!supabase) return true;
+export async function checkDisplayNameTaken(displayName) {
+  if (!supabase) return false;
   const { data, error } = await supabase
     .from('profiles')
-    .select('id')
+    .select('id, display_name, total_xp')
     .ilike('display_name', displayName)
     .limit(1);
   if (error) throw error;
-  return !data || data.length === 0;
+  return data && data.length > 0 ? data[0] : null;
 }
 
 export async function signInAnonymously(displayName) {
   if (!supabase) throw new Error('Supabase not configured');
 
-  // Prevent duplicate display names
-  const available = await checkDisplayNameAvailable(displayName);
-  if (!available) {
-    throw new Error('That name is already taken. Pick another one.');
+  // Check if name is taken — if so, caller should use reclaimProfile instead
+  const existing = await checkDisplayNameTaken(displayName);
+  if (existing) {
+    const err = new Error('NAME_TAKEN');
+    err.existingProfile = existing;
+    throw err;
   }
 
   const { data, error } = await supabase.auth.signInAnonymously({
     options: { data: { display_name: displayName } },
   });
   if (error) throw error;
+  return data;
+}
+
+export async function reclaimProfile(displayName) {
+  if (!supabase) throw new Error('Supabase not configured');
+
+  // Create a new anonymous session
+  const { data, error } = await supabase.auth.signInAnonymously({
+    options: { data: { display_name: displayName } },
+  });
+  if (error) throw error;
+
+  const newUserId = data.session?.user?.id;
+  if (!newUserId) throw new Error('Failed to create session');
+
+  // Transfer the old profile stats to the new user via RPC
+  const { error: rpcError } = await supabase.rpc('reclaim_profile', {
+    p_display_name: displayName,
+    p_new_user_id: newUserId,
+  });
+  if (rpcError) throw rpcError;
+
   return data;
 }
 

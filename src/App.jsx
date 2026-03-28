@@ -7,7 +7,7 @@ import { getProfile, upsertProfile, trackEvent } from './lib/supabase.js';
 import './App.css';
 
 function App() {
-  const { user, enterGame, logout, isLoggedIn, loading, error: authError, setError: setAuthError } = useAuth();
+  const { user, enterGame, reclaim, logout, isLoggedIn, loading, error: authError, setError: setAuthError } = useAuth();
   const [screen, setScreen] = useState('welcome');
   const [persistent, setPersistent] = useState({
     totalXp: 0, bestStreakAllTime: 0, totalSessions: 0,
@@ -42,6 +42,13 @@ function App() {
     const u = await enterGame(displayName);
     if (u) {
       trackEvent(u.id, 'signup', { method: 'anonymous' });
+    }
+  }
+
+  async function handleReclaim(displayName) {
+    const u = await reclaim(displayName);
+    if (u) {
+      trackEvent(u.id, 'reclaim', { method: 'anonymous' });
     }
   }
 
@@ -97,6 +104,7 @@ function App() {
     return (
       <WelcomeScreen
         onEnter={handleEnter}
+        onReclaim={handleReclaim}
         authError={authError}
         setAuthError={setAuthError}
       />

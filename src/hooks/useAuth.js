@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { supabase, signInAnonymously, signOut, getProfile } from '../lib/supabase.js';
+import { supabase, signInAnonymously, reclaimProfile, signOut, getProfile } from '../lib/supabase.js';
 
 export default function useAuth() {
   const [user, setUser] = useState(null);
@@ -47,8 +47,6 @@ export default function useAuth() {
                 id: session.user.id,
                 displayName: profile.display_name || session.user.user_metadata?.display_name || 'Player',
               });
-            } else {
-              await supabase.auth.signOut();
             }
           } else if (event === 'SIGNED_OUT') {
             setUser(null);
@@ -67,9 +65,27 @@ export default function useAuth() {
     try {
       const { session } = await signInAnonymously(displayName);
       if (session?.user) {
+        const u = { id: session.user.id, displayName };
+        setUser(u);
+        return u;
+      }
+    } catch (err) {
+      // Re-throw NAME_TAKEN so the UI can offer reclaim
+      if (err.message === 'NAME_TAKEN') throw err;
+      setError(err.message);
+      throw err;
+    }
+  }, []);
+
+  const reclaim = useCallback(async (displayName) => {
+    setError(null);
+    try {
+      const { session } = await reclaimProfile(displayName);
+      if (session?.user) {
+        const profile = await getProfile(session.user.id);
         const u = {
           id: session.user.id,
-          displayName,
+          displayName: profile?.display_name || displayName,
         };
         setUser(u);
         return u;
@@ -90,5 +106,5 @@ export default function useAuth() {
     }
   }, []);
 
-  return { user, enterGame, logout, isLoggedIn: !!user, loading, error, setError };
+  return { user, enterGame, reclaim, logout, isLoggedIn: !!user, loading, error, setError };
 }
