@@ -269,13 +269,13 @@ function PokerTable({ heroPosition, holeCards, communityCards, potSize, stackSiz
                 </div>
                 {opponentArchetype && seatIdx === villainSeatIdx && (
                   <div style={{
-                    background: `${opponentArchetype.color}22`,
+                    background: 'rgba(0,0,0,0.7)',
                     color: opponentArchetype.color,
                     padding: isMobile ? '1px 6px' : '2px 8px',
-                    borderRadius: 8,
+                    borderRadius: isMobile ? 5 : 8,
                     fontSize: isMobile ? 8 : 10,
                     fontWeight: 700,
-                    border: `1px solid ${opponentArchetype.color}44`,
+                    border: '1px solid rgba(255,255,255,0.15)',
                     marginTop: 2,
                     whiteSpace: 'nowrap',
                   }}>
