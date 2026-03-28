@@ -45,7 +45,8 @@ export default function WelcomeScreen({ onEnter, onReclaim, authError, setAuthEr
 
   async function handleReclaim() {
     setSubmitting(true);
-    clearErrors();
+    setLocalError('');
+    if (setAuthError) setAuthError(null);
     try {
       await onReclaim(displayName.trim());
     } catch {
