@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { supabase, signUp, signIn, signOut, getProfile } from '../lib/supabase.js';
+import { supabase, signInAnonymously, signOut, getProfile } from '../lib/supabase.js';
 
 export default function useAuth() {
   const [user, setUser] = useState(null);
@@ -19,7 +19,6 @@ export default function useAuth() {
           const profile = await getProfile(session.user.id);
           setUser({
             id: session.user.id,
-            email: session.user.email,
             displayName: profile?.display_name || session.user.user_metadata?.display_name || 'Player',
           });
         }
@@ -40,7 +39,6 @@ export default function useAuth() {
             const profile = await getProfile(session.user.id);
             setUser({
               id: session.user.id,
-              email: session.user.email,
               displayName: profile?.display_name || session.user.user_metadata?.display_name || 'Player',
             });
           } else if (event === 'SIGNED_OUT') {
@@ -55,43 +53,17 @@ export default function useAuth() {
     };
   }, []);
 
-  const login = useCallback(async (email, password) => {
+  const enterGame = useCallback(async (displayName) => {
     setError(null);
     try {
-      const { session } = await signIn(email, password);
-      if (session?.user) {
-        const profile = await getProfile(session.user.id);
-        const u = {
-          id: session.user.id,
-          email: session.user.email,
-          displayName: profile?.display_name || 'Player',
-        };
-        setUser(u);
-        return u;
-      }
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    }
-  }, []);
-
-  const register = useCallback(async (email, password, displayName) => {
-    setError(null);
-    try {
-      const { session, user: authUser } = await signUp(email, password, displayName);
-      // If email confirmation is disabled, session is returned immediately
+      const { session } = await signInAnonymously(displayName);
       if (session?.user) {
         const u = {
           id: session.user.id,
-          email: session.user.email,
           displayName,
         };
         setUser(u);
         return u;
-      }
-      // If email confirmation is enabled, user exists but no session yet
-      if (authUser) {
-        return { needsConfirmation: true, email };
       }
     } catch (err) {
       setError(err.message);
@@ -109,5 +81,5 @@ export default function useAuth() {
     }
   }, []);
 
-  return { user, login, register, logout, isLoggedIn: !!user, loading, error, setError };
+  return { user, enterGame, logout, isLoggedIn: !!user, loading, error, setError };
 }

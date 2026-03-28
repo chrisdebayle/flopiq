@@ -1,6 +1,9 @@
 -- =====================================================
 -- FlopIQ Database Schema
 -- Run this in Supabase SQL Editor (supabase.com → your project → SQL Editor)
+--
+-- Auth mode: Anonymous sign-in (Supabase anonymous auth)
+-- Enable in: Authentication → Providers → Anonymous Sign-Ins → ON
 -- =====================================================
 
 -- 1. Profiles table (extends Supabase auth.users)

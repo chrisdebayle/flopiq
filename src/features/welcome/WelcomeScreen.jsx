@@ -8,11 +8,8 @@ const CARDS = [
   { rank: 'A', suit: '\u2665', color: '#e74c3c' },
 ];
 
-export default function WelcomeScreen({ onLogin, onRegister, authError, setAuthError }) {
+export default function WelcomeScreen({ onEnter, authError, setAuthError }) {
   const [step, setStep] = useState(0);
-  const [mode, setMode] = useState('login'); // 'login' or 'register'
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [cardsDealt, setCardsDealt] = useState(0);
   const [localError, setLocalError] = useState('');
@@ -40,19 +37,12 @@ export default function WelcomeScreen({ onLogin, onRegister, authError, setAuthE
     e.preventDefault();
     clearErrors();
 
-    if (!email.trim()) { setLocalError('Enter your email'); return; }
-    if (!password) { setLocalError('Enter your password'); return; }
-    if (password.length < 6) { setLocalError('Password must be at least 6 characters'); return; }
-    if (mode === 'register' && !displayName.trim()) { setLocalError('Enter a display name'); return; }
-    if (mode === 'register' && displayName.trim().length > 20) { setLocalError('Display name: 20 characters max'); return; }
+    if (!displayName.trim()) { setLocalError('Pick a display name'); return; }
+    if (displayName.trim().length > 20) { setLocalError('20 characters max'); return; }
 
     setSubmitting(true);
     try {
-      if (mode === 'login') {
-        await onLogin(email.trim(), password);
-      } else {
-        await onRegister(email.trim(), password, displayName.trim());
-      }
+      await onEnter(displayName.trim());
     } catch {
       // Error is set via authError prop
     } finally {
@@ -152,7 +142,7 @@ export default function WelcomeScreen({ onLogin, onRegister, authError, setAuthE
         The pre-game warmup serious players don&apos;t skip.
       </p>
 
-      {/* Auth form */}
+      {/* Enter form — display name only */}
       <form onSubmit={handleSubmit} style={{
         marginTop: 32, display: 'flex', flexDirection: 'column',
         alignItems: 'center', gap: 10, width: '100%', maxWidth: 320,
@@ -160,62 +150,14 @@ export default function WelcomeScreen({ onLogin, onRegister, authError, setAuthE
         transform: step >= 3 ? 'translateY(0)' : 'translateY(20px)',
         transition: 'all 0.5s ease',
       }}>
-        {/* Mode toggle */}
-        <div style={{
-          display: 'flex', gap: 0, marginBottom: 4, width: '100%',
-          borderRadius: 10, overflow: 'hidden',
-          border: '1px solid rgba(255,255,255,0.12)',
-        }}>
-          {['login', 'register'].map(m => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => { setMode(m); clearErrors(); }}
-              style={{
-                flex: 1, padding: '10px 0', fontSize: 13, fontWeight: 700,
-                border: 'none', cursor: 'pointer',
-                textTransform: 'uppercase', letterSpacing: 0.5,
-                background: mode === m ? 'rgba(41,128,185,0.3)' : 'rgba(255,255,255,0.04)',
-                color: mode === m ? '#fff' : '#667',
-                transition: 'all 0.2s',
-              }}
-            >
-              {m === 'login' ? 'Sign In' : 'Sign Up'}
-            </button>
-          ))}
-        </div>
-
-        {mode === 'register' && (
-          <input
-            type="text"
-            value={displayName}
-            onChange={e => { setDisplayName(e.target.value); clearErrors(); }}
-            placeholder="Display name"
-            maxLength={20}
-            style={inputStyle(false)}
-            onFocus={e => e.target.style.borderColor = '#2980b9'}
-            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.12)'}
-          />
-        )}
-
         <input
-          type="email"
-          value={email}
-          onChange={e => { setEmail(e.target.value); clearErrors(); }}
-          placeholder="Email"
-          autoComplete="email"
-          style={inputStyle(false)}
-          onFocus={e => e.target.style.borderColor = '#2980b9'}
-          onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.12)'}
-        />
-
-        <input
-          type="password"
-          value={password}
-          onChange={e => { setPassword(e.target.value); clearErrors(); }}
-          placeholder="Password"
-          autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
-          style={inputStyle(false)}
+          type="text"
+          value={displayName}
+          onChange={e => { setDisplayName(e.target.value); clearErrors(); }}
+          placeholder="Choose your player name"
+          maxLength={20}
+          autoFocus
+          style={inputStyle(!!error)}
           onFocus={e => e.target.style.borderColor = '#2980b9'}
           onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.12)'}
         />
@@ -241,8 +183,14 @@ export default function WelcomeScreen({ onLogin, onRegister, authError, setAuthE
           onMouseEnter={e => { if (!submitting) e.currentTarget.style.transform = 'scale(1.02)'; }}
           onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
         >
-          {submitting ? 'Loading...' : mode === 'login' ? 'Take Your Seat' : 'Create Account'}
+          {submitting ? 'Shuffling...' : 'Take Your Seat'}
         </button>
+
+        <span style={{
+          fontSize: 11, color: '#556', fontWeight: 500, marginTop: 4, textAlign: 'center',
+        }}>
+          No account needed. Just pick a name and play.
+        </span>
       </form>
 
       <style>{`

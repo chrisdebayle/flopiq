@@ -7,7 +7,7 @@ import { getProfile, upsertProfile, trackEvent } from './lib/supabase.js';
 import './App.css';
 
 function App() {
-  const { user, login, register, logout, isLoggedIn, loading, error: authError, setError: setAuthError } = useAuth();
+  const { user, enterGame, logout, isLoggedIn, loading, error: authError, setError: setAuthError } = useAuth();
   const [screen, setScreen] = useState('welcome');
   const [persistent, setPersistent] = useState({
     totalXp: 0, bestStreakAllTime: 0, totalSessions: 0,
@@ -32,23 +32,16 @@ function App() {
           });
         }
       }).catch(err => console.warn('Profile fetch error:', err.message));
-      trackEvent(user.id, 'login', { method: 'session_restore' });
+      trackEvent(user.id, 'session_restore', { method: 'anonymous' });
     } else {
       setScreen('welcome');
     }
   }, [loading, isLoggedIn, user]);
 
-  async function handleLogin(email, password) {
-    const u = await login(email, password);
+  async function handleEnter(displayName) {
+    const u = await enterGame(displayName);
     if (u) {
-      trackEvent(u.id, 'login', { method: 'email' });
-    }
-  }
-
-  async function handleRegister(email, password, displayName) {
-    const result = await register(email, password, displayName);
-    if (result) {
-      trackEvent(result.id, 'signup', { method: 'email' });
+      trackEvent(u.id, 'signup', { method: 'anonymous' });
     }
   }
 
@@ -103,8 +96,7 @@ function App() {
   if (screen === 'welcome' || !isLoggedIn) {
     return (
       <WelcomeScreen
-        onLogin={handleLogin}
-        onRegister={handleRegister}
+        onEnter={handleEnter}
         authError={authError}
         setAuthError={setAuthError}
       />

@@ -11,22 +11,13 @@ export const supabase = supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
-// ── Auth helpers ──
+// ── Auth helpers (anonymous auth) ──
 
-export async function signUp(email, password, displayName) {
+export async function signInAnonymously(displayName) {
   if (!supabase) throw new Error('Supabase not configured');
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
+  const { data, error } = await supabase.auth.signInAnonymously({
     options: { data: { display_name: displayName } },
   });
-  if (error) throw error;
-  return data;
-}
-
-export async function signIn(email, password) {
-  if (!supabase) throw new Error('Supabase not configured');
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw error;
   return data;
 }
