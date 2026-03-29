@@ -30,6 +30,7 @@ export default function HomeScreen({ user, persistent, breakdown = {}, onStartDr
     return !localStorage.getItem('flopiq_seen_about');
   });
   const [archetypesOpen, setArchetypesOpen] = useState(false);
+  const [achievementsOpen, setAchievementsOpen] = useState(false);
 
   // Achievements
   const unlocked = getUnlockedAchievements(persistent, breakdown);
@@ -148,6 +149,17 @@ export default function HomeScreen({ user, persistent, breakdown = {}, onStartDr
         Start Drills
       </button>
 
+      {/* Drill Analytics section label */}
+      {(hasStreetData || hasOpponentData) && (
+        <span style={{
+          fontSize: isMobile ? 15 : 17, fontWeight: 800, color: colors.textPrimary,
+          fontFamily: fonts.heading, letterSpacing: 0.3,
+          display: 'block', marginBottom: isMobile ? 10 : 14,
+        }}>
+          Drill Analytics
+        </span>
+      )}
+
       {/* === Per-Street Accuracy === */}
       {hasStreetData && (
         <div style={{
@@ -195,53 +207,44 @@ export default function HomeScreen({ user, persistent, breakdown = {}, onStartDr
       )}
 
       {/* === Per-Opponent Accuracy === */}
-      {hasOpponentData && (
+      <div style={{
+        background: colors.bgCard,
+        borderRadius: 14, border: `1px solid ${colors.border}`,
+        padding: isMobile ? '14px 14px' : '18px 20px',
+        marginBottom: isMobile ? 12 : 16,
+      }}>
         <div style={{
-          background: colors.bgCard,
-          borderRadius: 14, border: `1px solid ${colors.border}`,
-          padding: isMobile ? '14px 14px' : '18px 20px',
-          marginBottom: isMobile ? 12 : 16,
+          fontWeight: 800, color: colors.textPrimary,
+          fontFamily: fonts.heading, letterSpacing: 0.3, marginBottom: 12,
+          textTransform: 'uppercase', fontSize: 11,
         }}>
-          <div style={{
-            fontWeight: 800, color: colors.textPrimary,
-            fontFamily: fonts.heading, letterSpacing: 0.3, marginBottom: 12,
-            textTransform: 'uppercase', fontSize: 11,
-          }}>
-            Accuracy by Opponent
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {OPPONENT_ORDER.map(key => {
-              const arch = OPPONENT_ARCHETYPES[key];
-              const data = (breakdown.byOpponent || {})[key];
-              if (!data || data.total === 0) return (
-                <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ width: 18, fontSize: 14, textAlign: 'center' }}>{arch.emoji}</span>
-                  <span style={{ width: 42, fontSize: 11, color: colors.textMuted, fontWeight: 600, fontFamily: fonts.heading }}>{arch.shortLabel}</span>
-                  <div style={{ flex: 1, height: 8, borderRadius: 4, background: 'rgba(0,0,0,0.3)' }} />
-                  <span style={{ width: 36, fontSize: 12, color: colors.textMuted, textAlign: 'right' }}>-</span>
-                </div>
-              );
-              const pct = Math.round((data.correct / data.total) * 100);
-              const barColor = pct >= 80 ? colors.green : pct >= 60 ? colors.orange : colors.red;
-              return (
-                <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ width: 18, fontSize: 14, textAlign: 'center' }}>{arch.emoji}</span>
-                  <span style={{ width: 42, fontSize: 11, color: arch.color, fontWeight: 600, fontFamily: fonts.heading }}>{arch.shortLabel}</span>
-                  <div style={{ flex: 1, height: 8, borderRadius: 4, background: 'rgba(0,0,0,0.3)', overflow: 'hidden' }}>
-                    <div style={{
-                      height: '100%', borderRadius: 4, width: `${pct}%`,
-                      background: barColor,
-                      transition: 'width 0.5s ease',
-                    }} />
-                  </div>
-                  <span style={{ width: 36, fontSize: 12, color: colors.textSecondary, fontWeight: 700, textAlign: 'right' }}>{pct}%</span>
-                  <span style={{ width: 34, fontSize: 11, color: colors.textMuted, textAlign: 'right' }}>{data.correct}/{data.total}</span>
-                </div>
-              );
-            })}
-          </div>
+          Accuracy by Opponent
         </div>
-      )}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 8 : 10, justifyContent: 'center' }}>
+          {OPPONENT_ORDER.map(key => {
+            const arch = OPPONENT_ARCHETYPES[key];
+            const data = (breakdown.byOpponent || {})[key];
+            const hasData = data && data.total > 0;
+            const pct = hasData ? Math.round((data.correct / data.total) * 100) : null;
+            const pctColor = pct !== null ? (pct >= 80 ? colors.green : pct >= 60 ? colors.orange : colors.red) : colors.textMuted;
+            return (
+              <div key={key} style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: isMobile ? '7px 14px' : '8px 16px',
+                background: hasData ? colors.bgElevated : 'rgba(0,0,0,0.2)',
+                borderRadius: 10,
+                border: `1px solid ${hasData ? `${arch.color}33` : colors.border}`,
+              }}>
+                <span style={{ fontSize: isMobile ? 16 : 18 }}>{arch.emoji}</span>
+                <span style={{ fontSize: isMobile ? 11 : 12, color: hasData ? arch.color : colors.textMuted, fontWeight: 700, fontFamily: fonts.heading }}>{arch.shortLabel}</span>
+                <span style={{ fontSize: isMobile ? 12 : 13, color: pctColor, fontWeight: 800, fontFamily: fonts.heading }}>
+                  {pct !== null ? `${pct}%` : '-'}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* === Achievements === */}
       <div style={{
@@ -251,7 +254,7 @@ export default function HomeScreen({ user, persistent, breakdown = {}, onStartDr
         marginBottom: isMobile ? 12 : 16,
       }}>
         <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          display: 'flex', alignItems: 'center', gap: 10,
           marginBottom: 14,
         }}>
           <span style={{
@@ -268,60 +271,44 @@ export default function HomeScreen({ user, persistent, breakdown = {}, onStartDr
           </span>
         </div>
 
-        {/* Unlocked badges */}
-        {unlocked.length > 0 && (
-          <div style={{
-            display: 'flex', flexWrap: 'wrap', gap: isMobile ? 6 : 8,
-            marginBottom: unlocked.length < totalAchievements ? 14 : 0,
-          }}>
-            {unlocked.map(a => (
-              <div key={a.id} title={`${a.name}: ${a.desc}`} style={{
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 6 : 8, justifyContent: 'center' }}>
+          {ACHIEVEMENTS.map(a => {
+            const isUnlocked = unlockedIds.has(a.id);
+            return (
+              <div key={a.id} title={a.desc} style={{
                 display: 'flex', alignItems: 'center', gap: 6,
-                padding: isMobile ? '5px 10px' : '6px 12px',
-                background: colors.bgElevated,
+                padding: isMobile ? '6px 12px' : '7px 14px',
+                background: isUnlocked ? colors.bgElevated : 'rgba(0,0,0,0.2)',
                 borderRadius: 8,
-                border: `1px solid ${colors.cyanBorder}`,
-                boxShadow: `0 0 6px ${colors.cyanDim}`,
+                border: `1px solid ${isUnlocked ? colors.cyanBorder : colors.border}`,
+                boxShadow: isUnlocked ? `0 0 6px ${colors.cyanDim}` : 'none',
+                opacity: isUnlocked ? 1 : 0.5,
               }}>
-                <span style={{ fontSize: isMobile ? 16 : 18 }}>{a.emoji}</span>
-                <span style={{ fontSize: isMobile ? 10 : 11, color: colors.textPrimary, fontWeight: 700, fontFamily: fonts.heading }}>{a.name}</span>
+                <span style={{ fontSize: isMobile ? 16 : 18, filter: isUnlocked ? 'none' : 'grayscale(1)' }}>
+                  {isUnlocked ? a.emoji : '🔒'}
+                </span>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{
+                    fontSize: isMobile ? 10 : 11,
+                    color: isUnlocked ? colors.textPrimary : colors.textMuted,
+                    fontWeight: isUnlocked ? 700 : 600,
+                    fontFamily: fonts.heading,
+                  }}>
+                    {a.name}
+                  </span>
+                  <span style={{
+                    fontSize: isMobile ? 9 : 10,
+                    color: colors.textMuted,
+                    lineHeight: 1.2,
+                    opacity: isUnlocked ? 1 : 0.7,
+                  }}>
+                    {a.desc}
+                  </span>
+                </div>
               </div>
-            ))}
-          </div>
-        )}
-
-        {/* Locked badges (show next few) */}
-        {unlocked.length < totalAchievements && (
-          <div style={{
-            display: 'flex', flexWrap: 'wrap', gap: isMobile ? 6 : 8,
-          }}>
-            {ACHIEVEMENTS.filter(a => !unlockedIds.has(a.id)).slice(0, isMobile ? 4 : 6).map(a => (
-              <div key={a.id} title={`${a.name}: ${a.desc}`} style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: isMobile ? '5px 10px' : '6px 12px',
-                background: 'rgba(0,0,0,0.2)',
-                borderRadius: 8,
-                border: `1px solid ${colors.border}`,
-                opacity: 0.5,
-              }}>
-                <span style={{ fontSize: isMobile ? 16 : 18, filter: 'grayscale(1)' }}>🔒</span>
-                <span style={{ fontSize: isMobile ? 10 : 11, color: colors.textMuted, fontWeight: 600, fontFamily: fonts.heading }}>{a.name}</span>
-              </div>
-            ))}
-            {ACHIEVEMENTS.filter(a => !unlockedIds.has(a.id)).length > (isMobile ? 4 : 6) && (
-              <span style={{ fontSize: 11, color: colors.textMuted, alignSelf: 'center', padding: '0 4px' }}>
-                +{ACHIEVEMENTS.filter(a => !unlockedIds.has(a.id)).length - (isMobile ? 4 : 6)} more
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Empty state */}
-        {unlocked.length === 0 && (
-          <div style={{ fontSize: 12, color: colors.textMuted, textAlign: 'center', padding: '4px 0' }}>
-            Start playing to unlock achievements!
-          </div>
-        )}
+            );
+          })}
+        </div>
       </div>
 
       {/* Leaderboard */}
