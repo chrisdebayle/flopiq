@@ -1,4 +1,5 @@
 import { SUIT_SYMBOLS, SUIT_COLORS, RANK_NAMES } from '../engine/deck.js';
+import { colors } from '../theme.js';
 
 function Card({ card, size = 'medium', faceDown = false, selectable = false, selected = false, onClick }) {
   const sizes = {
@@ -16,15 +17,15 @@ function Card({ card, size = 'medium', faceDown = false, selectable = false, sel
       <div
         style={{
           width: s.width, height: s.height, borderRadius,
-          background: 'linear-gradient(135deg, #1a5276 25%, #154360 75%)',
-          border: '2px solid #0d3446',
+          background: 'linear-gradient(135deg, #0a1a2e 25%, #0f2440 75%)',
+          border: `2px solid ${colors.cyanBorder}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+          boxShadow: `0 2px 8px rgba(0,0,0,0.3), 0 0 10px ${colors.cyanDim}`,
           cursor: selectable ? 'pointer' : 'default',
         }}
         onClick={onClick}
       >
-        <span style={{ fontSize: s.suitSize, color: '#fff', opacity: 0.3 }}>♠</span>
+        <span style={{ fontSize: s.suitSize, color: colors.purple, opacity: 0.3 }}>♠</span>
       </div>
     );
   }
@@ -33,25 +34,34 @@ function Card({ card, size = 'medium', faceDown = false, selectable = false, sel
     return (
       <div style={{
         width: s.width, height: s.height, borderRadius,
-        border: '2px dashed #555', background: 'rgba(255,255,255,0.05)',
+        border: `2px dashed ${colors.cyanBorder}`, background: colors.bgSurface,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <span style={{ color: '#555', fontSize: s.fontSize }}>?</span>
+        <span style={{ color: colors.textMuted, fontSize: s.fontSize }}>?</span>
       </div>
     );
   }
 
-  const color = card.suit === 'h' || card.suit === 'd' ? '#c0392b' : '#1a1a2e';
+  const suitColors = {
+    h: '#ff1744',        // Hearts — Red
+    d: colors.cyan,      // Diamonds — Cyan
+    c: colors.green,     // Clubs — Neon Green
+    s: colors.purple,    // Spades — Purple
+  };
+  const color = suitColors[card.suit] || colors.cyan;
+  const isRed = card.suit === 'h';
 
   return (
     <div
       style={{
         width: s.width, height: s.height, borderRadius,
-        background: selected ? '#fff3cd' : '#fff',
-        border: selected ? '3px solid #f39c12' : '2px solid #ddd',
+        background: selected ? 'rgba(255, 140, 0, 0.1)' : '#0a1020',
+        border: selected ? `3px solid ${colors.orange}` : `1px solid ${colors.cyanBorder}`,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         justifyContent: 'center', gap: 2,
-        boxShadow: selected ? '0 0 12px rgba(243,156,18,0.5)' : '0 2px 8px rgba(0,0,0,0.15)',
+        boxShadow: selected
+          ? `0 0 12px ${colors.orangeGlow}`
+          : `0 2px 8px rgba(0,0,0,0.3), 0 0 4px ${color}22`,
         cursor: selectable ? 'pointer' : 'default',
         transition: 'all 0.15s ease',
         transform: selected ? 'translateY(-4px)' : 'none',

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { fonts } from '../theme.js';
 
 const PARTICLE_COLORS = [
   '#ffd700', '#ff6b00', '#ff1744', '#ffffff', '#ffab00',
@@ -138,14 +139,14 @@ export default function StreakCelebration({ milestone, onComplete }) {
           <div style={{
             fontSize: 52, fontWeight: 900, color: '#ffd700',
             textShadow: '0 0 30px rgba(255,215,0,0.6), 0 0 60px rgba(255,140,0,0.3)',
-            letterSpacing: 2,
+            letterSpacing: 2, fontFamily: fonts.heading,
           }}>
             {milestone}
           </div>
           <div style={{
             fontSize: 18, fontWeight: 700, color: '#fff',
             textShadow: '0 0 20px rgba(255,255,255,0.4)',
-            textTransform: 'uppercase', letterSpacing: 4, marginTop: 4,
+            textTransform: 'uppercase', letterSpacing: 4, marginTop: 4, fontFamily: fonts.heading,
           }}>
             Streak
           </div>

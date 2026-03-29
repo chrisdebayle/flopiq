@@ -1,4 +1,5 @@
 import { getSessionGrade } from '../data/gamification.js';
+import { colors, glows, gradients, fonts } from '../theme.js';
 
 export default function SessionSummary({ session, persistent, onNewSession, onKeepGoing, isMobile }) {
   const grade = getSessionGrade(session.correct, session.total);
@@ -62,24 +63,26 @@ export default function SessionSummary({ session, persistent, onNewSession, onKe
       padding: 16,
     }}>
       <div style={{
-        background: 'linear-gradient(135deg, #0d1117 0%, #161b22 100%)',
+        background: `linear-gradient(135deg, ${colors.bgDeep} 0%, ${colors.bgSurface} 100%)`,
         border: `2px solid ${grade.color}`,
         borderRadius: 16, padding: isMobile ? 18 : 28, maxWidth: 480, width: '100%',
         maxHeight: '90vh', overflowY: 'auto',
         boxShadow: `0 8px 32px rgba(0,0,0,0.5), 0 0 30px ${grade.color}33`,
+        fontFamily: fonts.body,
       }}>
         {/* Grade */}
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
           <div style={{
             fontSize: isMobile ? 48 : 60, fontWeight: 900, color: grade.color,
             textShadow: `0 0 40px ${grade.color}66`,
-            lineHeight: 1,
+            lineHeight: 1, fontFamily: fonts.heading,
           }}>
             {grade.letter}
           </div>
           <div style={{
             fontSize: isMobile ? 14 : 16, fontWeight: 700, color: grade.color,
             textTransform: 'uppercase', letterSpacing: 2, marginTop: 4,
+            fontFamily: fonts.heading,
           }}>
             {grade.label}
           </div>
@@ -88,17 +91,17 @@ export default function SessionSummary({ session, persistent, onNewSession, onKe
         {/* Stats row */}
         <div style={{
           display: 'flex', justifyContent: 'space-around', marginBottom: 16,
-          background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '10px 0',
-          border: '1px solid rgba(255,255,255,0.06)',
+          background: colors.bgCard, borderRadius: 10, padding: '10px 0',
+          border: `1px solid ${colors.border}`,
         }}>
           {[
-            { label: 'Accuracy', value: `${pct}%`, color: pct >= 70 ? '#27ae60' : '#e74c3c' },
-            { label: 'Correct', value: `${session.correct}/${session.total}`, color: '#dde' },
-            { label: 'XP Earned', value: `+${session.xpEarnedThisSession}`, color: '#ffd700' },
-            { label: 'Time', value: `${duration}m`, color: '#8899aa' },
+            { label: 'Accuracy', value: `${pct}%`, color: pct >= 70 ? colors.green : colors.red },
+            { label: 'Correct', value: `${session.correct}/${session.total}`, color: colors.textPrimary },
+            { label: 'XP Earned', value: `+${session.xpEarnedThisSession}`, color: colors.gold },
+            { label: 'Time', value: `${duration}m`, color: colors.textSecondary },
           ].map((s, i) => (
             <div key={i} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 9, color: '#667', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+              <div style={{ fontSize: 9, color: colors.textMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                 {s.label}
               </div>
               <div style={{ fontSize: isMobile ? 15 : 17, fontWeight: 800, color: s.color, marginTop: 2 }}>
@@ -115,12 +118,12 @@ export default function SessionSummary({ session, persistent, onNewSession, onKe
             marginBottom: 16, padding: '8px 0',
           }}>
             <span style={{ fontSize: 18 }}>{'\u2728'}</span>
-            <span style={{ color: '#ff9800', fontSize: 15, fontWeight: 700 }}>
+            <span style={{ color: colors.orange, fontSize: 15, fontWeight: 700, fontFamily: fonts.heading }}>
               Best Streak: {session.bestStreakThisSession}
             </span>
             {isNewBest && (
               <span style={{
-                background: '#ffd700', color: '#000', fontSize: 9, fontWeight: 800,
+                background: colors.gold, color: '#000', fontSize: 9, fontWeight: 800,
                 padding: '2px 8px', borderRadius: 6, textTransform: 'uppercase',
               }}>
                 New Best
@@ -133,7 +136,7 @@ export default function SessionSummary({ session, persistent, onNewSession, onKe
         {sortedCategories.length > 0 && (
           <div style={{ marginBottom: 16 }}>
             <div style={{
-              fontSize: 10, color: '#667', fontWeight: 700, textTransform: 'uppercase',
+              fontSize: 10, color: colors.textMuted, fontWeight: 700, textTransform: 'uppercase',
               letterSpacing: 0.5, marginBottom: 8,
             }}>
               Breakdown
@@ -145,8 +148,8 @@ export default function SessionSummary({ session, persistent, onNewSession, onKe
                   display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6,
                 }}>
                   <span style={{
-                    width: 60, fontSize: 12, color: '#aab', fontWeight: 600,
-                    textTransform: 'capitalize',
+                    width: 60, fontSize: 12, color: colors.textSecondary, fontWeight: 600,
+                    textTransform: 'capitalize', fontFamily: fonts.heading,
                   }}>
                     {street}
                   </span>
@@ -156,16 +159,16 @@ export default function SessionSummary({ session, persistent, onNewSession, onKe
                   }}>
                     <div style={{
                       height: '100%', borderRadius: 4, width: `${catPct}%`,
-                      background: catPct >= 70 ? '#27ae60' : catPct >= 50 ? '#f39c12' : '#e74c3c',
+                      background: catPct >= 70 ? colors.green : catPct >= 50 ? colors.orange : colors.red,
                       transition: 'width 0.5s ease',
                     }} />
                   </div>
                   <span style={{
-                    width: 36, fontSize: 12, color: '#aab', fontWeight: 700, textAlign: 'right',
+                    width: 36, fontSize: 12, color: colors.textSecondary, fontWeight: 700, textAlign: 'right',
                   }}>
                     {catPct}%
                   </span>
-                  <span style={{ width: 30, fontSize: 11, color: '#556', textAlign: 'right' }}>
+                  <span style={{ width: 30, fontSize: 11, color: colors.textMuted, textAlign: 'right' }}>
                     {data.correct}/{data.total}
                   </span>
                 </div>
@@ -176,13 +179,13 @@ export default function SessionSummary({ session, persistent, onNewSession, onKe
 
         {/* Advice */}
         <div style={{
-          background: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: '10px 14px',
-          borderLeft: '3px solid #f39c12', marginBottom: 20,
+          background: colors.bgElevated, borderRadius: 10, padding: '10px 14px',
+          borderLeft: `3px solid ${colors.orange}`, marginBottom: 20,
         }}>
-          <div style={{ fontSize: 10, color: '#f39c12', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
+          <div style={{ fontSize: 10, color: colors.orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
             What to Work On
           </div>
-          <div style={{ color: '#ccd', fontSize: isMobile ? 13 : 14, lineHeight: 1.5 }}>
+          <div style={{ color: colors.textSecondary, fontSize: isMobile ? 13 : 14, lineHeight: 1.5 }}>
             {advice}
           </div>
         </div>
@@ -191,15 +194,18 @@ export default function SessionSummary({ session, persistent, onNewSession, onKe
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={onKeepGoing} style={{
             flex: 1, padding: '12px 0', fontSize: 14, fontWeight: 700,
-            borderRadius: 10, border: '1px solid rgba(255,255,255,0.15)',
-            background: 'rgba(255,255,255,0.06)', color: '#aab', cursor: 'pointer',
+            borderRadius: 10, border: `1px solid ${colors.borderLight}`,
+            background: colors.bgElevated, color: colors.textSecondary, cursor: 'pointer',
+            fontFamily: fonts.heading, transition: 'all 0.15s ease',
           }}>
             Keep Going
           </button>
           <button onClick={onNewSession} style={{
             flex: 1, padding: '12px 0', fontSize: 14, fontWeight: 700,
             borderRadius: 10, border: 'none',
-            background: '#2980b9', color: '#fff', cursor: 'pointer',
+            background: gradients.primaryButton, color: '#fff', cursor: 'pointer',
+            boxShadow: glows.button, fontFamily: fonts.heading,
+            transition: 'all 0.15s ease',
           }}>
             New Session
           </button>

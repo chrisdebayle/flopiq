@@ -6,8 +6,8 @@
 
 /* Header */
 .app-header {
-  background: #161b22;
-  border-bottom: 1px solid #30363d;
+  background: linear-gradient(180deg, #0a1020 0%, #0f1a2e 100%);
+  border-bottom: 1px solid rgba(0, 229, 255, 0.08);
   padding: 0 24px;
   position: sticky;
   top: 0;
@@ -32,19 +32,24 @@
 }
 
 .logo-title {
-  font-size: 20px;
-  font-weight: 800;
-  color: #fff;
+  font-family: 'Avenir', 'Avenir Next', 'Nunito Sans', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #00e5ff;
   margin: 0;
   line-height: 1.2;
   text-align: center;
+  text-shadow: 0 0 12px rgba(0, 229, 255, 0.3);
+  letter-spacing: 1px;
 }
 
 .logo-subtitle {
-  font-size: 11px;
-  color: #8899aa;
+  font-family: 'Avenir', 'Avenir Next', 'Nunito Sans', sans-serif;
+  font-size: 10px;
+  color: #7a8fa6;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+  font-weight: 600;
 }
 
 .logo-row {
@@ -55,8 +60,8 @@
 
 .back-btn {
   background: none;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #8899aa;
+  border: 1px solid rgba(0, 229, 255, 0.15);
+  color: #7a8fa6;
   font-size: 18px;
   width: 34px;
   height: 34px;
@@ -70,8 +75,9 @@
 }
 
 .back-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
+  background: rgba(0, 229, 255, 0.08);
+  color: #00e5ff;
+  border-color: rgba(0, 229, 255, 0.3);
 }
 
 /* Main */
@@ -87,9 +93,9 @@
 .app-footer {
   text-align: center;
   padding: 20px 24px;
-  color: #556677;
+  color: #4a5a6e;
   font-size: 12px;
-  border-top: 1px solid #1e2530;
+  border-top: 1px solid rgba(0, 229, 255, 0.06);
 }
 
 /* Responsive */
@@ -108,11 +114,11 @@
 
 @media (max-width: 480px) {
   .logo-title {
-    font-size: 16px;
+    font-size: 18px;
   }
 
   .logo-subtitle {
-    font-size: 9px;
+    font-size: 8px;
   }
 
   .header-content {

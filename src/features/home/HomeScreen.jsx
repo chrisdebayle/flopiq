@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getLevel, OPPONENT_ARCHETYPES } from '../../data/gamification.js';
 import { SCENARIOS } from '../../data/scenarios.js';
 import Leaderboard from '../../components/Leaderboard.jsx';
+import { colors, glows, gradients, fonts } from '../../theme.js';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 480);
@@ -31,41 +32,49 @@ export default function HomeScreen({ user, persistent, onStartDrills, onLogout }
       <div style={{
         display: 'flex', alignItems: 'center', gap: isMobile ? 12 : 20,
         padding: isMobile ? '16px 14px' : '20px 24px',
-        background: 'rgba(255,255,255,0.04)',
-        borderRadius: 14, border: '1px solid rgba(255,255,255,0.06)',
+        background: colors.bgCard,
+        borderRadius: 14, border: `1px solid ${colors.borderLight}`,
         marginBottom: isMobile ? 16 : 24,
+        boxShadow: `inset 0 1px 0 ${colors.cyanDim}`,
       }}>
         {/* Level badge */}
         <div style={{
           width: isMobile ? 50 : 64, height: isMobile ? 50 : 64,
           borderRadius: '50%',
-          background: 'linear-gradient(135deg, rgba(41,128,185,0.2), rgba(41,128,185,0.05))',
-          border: '2px solid rgba(41,128,185,0.3)',
+          background: `linear-gradient(135deg, ${colors.cyanDim}, rgba(0,229,255,0.05))`,
+          border: `2px solid ${colors.cyanBorder}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: isMobile ? 24 : 32, flexShrink: 0,
+          boxShadow: glows.cyan,
         }}>
           {level.emoji}
         </div>
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
-            fontSize: isMobile ? 18 : 22, fontWeight: 800, color: '#fff',
+            fontSize: isMobile ? 18 : 22, fontWeight: 800, color: colors.textPrimary,
+            fontFamily: fonts.heading,
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {user.displayName}
           </div>
           <div style={{
-            fontSize: isMobile ? 12 : 13, color: '#8899aa', fontWeight: 600, marginTop: 2,
+            fontSize: isMobile ? 12 : 13, color: colors.textSecondary, fontWeight: 600, marginTop: 2,
           }}>
             {level.name} &middot; {persistent.totalXp.toLocaleString()} XP
           </div>
         </div>
 
         <button onClick={onLogout} style={{
-          background: 'none', border: '1px solid rgba(255,255,255,0.1)',
-          color: '#556', fontSize: 11, fontWeight: 600, padding: '5px 10px',
+          background: 'none', border: `1px solid ${colors.border}`,
+          color: colors.textMuted, fontSize: 11, fontWeight: 600, padding: '5px 10px',
           borderRadius: 6, cursor: 'pointer', flexShrink: 0,
-        }}>
+          fontFamily: fonts.body,
+          transition: 'all 0.15s ease',
+        }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = colors.cyanBorder; e.currentTarget.style.color = colors.cyan; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = colors.border; e.currentTarget.style.color = colors.textMuted; }}
+        >
           Sign Out
         </button>
       </div>
@@ -78,24 +87,26 @@ export default function HomeScreen({ user, persistent, onStartDrills, onLogout }
         marginBottom: isMobile ? 16 : 24,
       }}>
         {[
-          { label: 'Sessions', value: persistent.totalSessions, color: '#2980b9' },
-          { label: 'Accuracy', value: accuracy > 0 ? `${accuracy}%` : '-', color: accuracy >= 70 ? '#27ae60' : '#f39c12' },
-          { label: 'Best Streak', value: persistent.bestStreakAllTime, color: '#ff9800' },
-          { label: 'Decisions', value: persistent.totalAnswered, color: '#8899aa' },
+          { label: 'Sessions', value: persistent.totalSessions, color: colors.cyan },
+          { label: 'Accuracy', value: accuracy > 0 ? `${accuracy}%` : '-', color: accuracy >= 70 ? colors.green : colors.orange },
+          { label: 'Best Streak', value: persistent.bestStreakAllTime, color: colors.orange },
+          { label: 'Decisions', value: persistent.totalAnswered, color: colors.textSecondary },
         ].map((stat, i) => (
           <div key={i} style={{
             padding: isMobile ? '12px 10px' : '16px',
-            background: 'rgba(255,255,255,0.03)',
-            borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)',
+            background: colors.bgCard,
+            borderRadius: 12, border: `1px solid ${colors.border}`,
             textAlign: 'center',
           }}>
             <div style={{
               fontSize: isMobile ? 22 : 28, fontWeight: 900, color: stat.color,
+              fontFamily: fonts.heading,
+              textShadow: `0 0 8px ${stat.color}44`,
             }}>
               {typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}
             </div>
             <div style={{
-              fontSize: 10, color: '#556', fontWeight: 700, marginTop: 4,
+              fontSize: 10, color: colors.textMuted, fontWeight: 700, marginTop: 4,
               textTransform: 'uppercase', letterSpacing: 0.5,
             }}>
               {stat.label}
@@ -108,16 +119,17 @@ export default function HomeScreen({ user, persistent, onStartDrills, onLogout }
       <button onClick={onStartDrills} style={{
         width: '100%', padding: isMobile ? '16px 0' : '18px 0',
         fontSize: isMobile ? 16 : 18, fontWeight: 800,
+        fontFamily: fonts.heading,
         borderRadius: 14, border: 'none',
-        background: 'linear-gradient(135deg, #2980b9, #2471a3)',
+        background: gradients.secondaryButton,
         color: '#fff', cursor: 'pointer',
         textTransform: 'uppercase', letterSpacing: 1,
-        boxShadow: '0 4px 20px rgba(41,128,185,0.3)',
+        boxShadow: glows.orange,
         transition: 'all 0.2s ease',
         marginBottom: isMobile ? 20 : 28,
       }}
-        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.01)'}
-        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.01)'; e.currentTarget.style.boxShadow = glows.orangeStrong; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = glows.orange; }}
       >
         Start Drills
       </button>
@@ -128,16 +140,16 @@ export default function HomeScreen({ user, persistent, onStartDrills, onLogout }
       {/* FAQs */}
       <div style={{ marginTop: isMobile ? 16 : 24 }}>
         <span style={{
-          fontSize: 17, fontWeight: 800, color: '#fff',
-          letterSpacing: 0.3,
+          fontSize: isMobile ? 15 : 17, fontWeight: 800, color: colors.textPrimary,
+          fontFamily: fonts.heading, letterSpacing: 0.3,
         }}>
           FAQs
         </span>
 
         {/* What is FlopIQ */}
         <div style={{
-          background: 'rgba(255,255,255,0.03)',
-          borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)',
+          background: colors.bgCard,
+          borderRadius: 12, border: `1px solid ${colors.border}`,
           marginTop: isMobile ? 10 : 14,
           overflow: 'hidden',
         }}>
@@ -152,13 +164,13 @@ export default function HomeScreen({ user, persistent, onStartDrills, onLogout }
             background: 'none', border: 'none', cursor: 'pointer',
           }}>
             <span style={{
-              fontSize: isMobile ? 14 : 15, fontWeight: 800, color: '#fff',
-              letterSpacing: 0.3,
+              fontSize: isMobile ? 14 : 15, fontWeight: 800, color: colors.textPrimary,
+              fontFamily: fonts.heading, letterSpacing: 0.3,
             }}>
               What is FlopIQ?
             </span>
             <span style={{
-              fontSize: 14, color: '#556', fontWeight: 600,
+              fontSize: 14, color: colors.textMuted, fontWeight: 600,
               transform: aboutOpen ? 'rotate(180deg)' : 'rotate(0deg)',
               transition: 'transform 0.2s ease',
             }}>
@@ -176,7 +188,7 @@ export default function HomeScreen({ user, persistent, onStartDrills, onLogout }
               padding: isMobile ? '0 14px 16px' : '0 18px 20px',
               display: 'flex', flexDirection: 'column', gap: isMobile ? 10 : 12,
             }}>
-              <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginBottom: 4 }} />
+              <div style={{ borderTop: `1px solid ${colors.border}`, marginBottom: 4 }} />
 
               {[
                 { icon: '\u{1F3AF}', text: `${SCENARIOS.length} scenarios across 5 opponent archetypes. Read your opponent. Exploit their leaks. Make the right decision.` },
@@ -191,7 +203,7 @@ export default function HomeScreen({ user, persistent, onStartDrills, onLogout }
                     {item.icon}
                   </span>
                   <span style={{
-                    fontSize: isMobile ? 13 : 14, color: '#b0bec5', lineHeight: 1.5, fontWeight: 500,
+                    fontSize: isMobile ? 13 : 14, color: colors.textSecondary, lineHeight: 1.5, fontWeight: 500,
                   }}>
                     {item.text}
                   </span>
@@ -203,9 +215,9 @@ export default function HomeScreen({ user, persistent, onStartDrills, onLogout }
 
         {/* Player Archetypes dropdown */}
         <div style={{
-          background: 'rgba(255,255,255,0.04)',
+          background: colors.bgCard,
           borderRadius: 14,
-          border: '1px solid rgba(255,255,255,0.06)',
+          border: `1px solid ${colors.border}`,
           marginTop: isMobile ? 8 : 12,
           overflow: 'hidden',
         }}>
@@ -216,13 +228,13 @@ export default function HomeScreen({ user, persistent, onStartDrills, onLogout }
             background: 'none', border: 'none', cursor: 'pointer',
           }}>
             <span style={{
-              fontSize: isMobile ? 14 : 15, fontWeight: 800, color: '#fff',
-              letterSpacing: 0.3,
+              fontSize: isMobile ? 14 : 15, fontWeight: 800, color: colors.textPrimary,
+              fontFamily: fonts.heading, letterSpacing: 0.3,
             }}>
               What are Player Archetypes?
             </span>
             <span style={{
-              fontSize: 14, color: '#556', fontWeight: 600,
+              fontSize: 14, color: colors.textMuted, fontWeight: 600,
               transform: archetypesOpen ? 'rotate(180deg)' : 'rotate(0deg)',
               transition: 'transform 0.2s ease',
             }}>
@@ -240,7 +252,7 @@ export default function HomeScreen({ user, persistent, onStartDrills, onLogout }
               padding: isMobile ? '0 14px 16px' : '0 18px 20px',
               display: 'flex', flexDirection: 'column', gap: isMobile ? 8 : 10,
             }}>
-              <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginBottom: 4 }} />
+              <div style={{ borderTop: `1px solid ${colors.border}`, marginBottom: 4 }} />
 
               {Object.entries(OPPONENT_ARCHETYPES).map(([key, arch]) => (
                 <div key={key} style={{
@@ -261,12 +273,12 @@ export default function HomeScreen({ user, persistent, onStartDrills, onLogout }
                       {arch.label}
                     </div>
                     <div style={{
-                      fontSize: isMobile ? 12 : 13, color: '#b0bec5', lineHeight: 1.4,
+                      fontSize: isMobile ? 12 : 13, color: colors.textSecondary, lineHeight: 1.4,
                     }}>
                       {arch.description}
                     </div>
                     <div style={{
-                      fontSize: isMobile ? 11 : 12, color: '#78909c', lineHeight: 1.4,
+                      fontSize: isMobile ? 11 : 12, color: colors.textMuted, lineHeight: 1.4,
                       marginTop: 3, fontStyle: 'italic',
                     }}>
                       {arch.spotting}

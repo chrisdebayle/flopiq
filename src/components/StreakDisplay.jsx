@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { colors, fonts } from '../theme.js';
 
 export default function StreakDisplay({ streak, bestStreak, isMobile }) {
   const [pulse, setPulse] = useState(false);
@@ -48,8 +49,8 @@ export default function StreakDisplay({ streak, bestStreak, isMobile }) {
       )}
       {streak === 0 && bestStreak > 0 && (
         <div style={{
-          fontSize: isMobile ? 10 : 11, color: '#556',
-          padding: '2px 8px',
+          fontSize: isMobile ? 10 : 11, color: colors.textMuted,
+          padding: '2px 8px', fontFamily: fonts.body,
         }}>
           Best: {bestStreak}
         </div>

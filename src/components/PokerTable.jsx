@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import Card from './Card.jsx';
+import { colors, fonts } from '../theme.js';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 480);
@@ -66,7 +67,7 @@ function ChipStack({ type, amount, isMobile }) {
   const chipW = isMobile ? (isRaise ? 12 : 8) : (isRaise ? 16 : 11);
   const chipH = Math.round(chipW * 0.45);
   const spacing = isMobile ? 2 : 3;
-  const colors = isRaise
+  const chipColors = isRaise
     ? ['#bb2222', '#cc3333', '#dd4444', '#cc3333']
     : isCall
     ? ['#3377aa', '#4488bb', '#5599cc']
@@ -75,7 +76,7 @@ function ChipStack({ type, amount, isMobile }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <div style={{ position: 'relative', width: chipW, height: chipCount * spacing + chipH }}>
-        {colors.map((c, i) => (
+        {chipColors.map((c, i) => (
           <div key={i} style={{
             position: 'absolute',
             bottom: i * spacing,
@@ -84,7 +85,7 @@ function ChipStack({ type, amount, isMobile }) {
             borderRadius: '50%',
             background: `linear-gradient(180deg, ${c} 0%, ${c}dd 100%)`,
             border: `1px solid rgba(0,0,0,0.4)`,
-            boxShadow: i === colors.length - 1
+            boxShadow: i === chipColors.length - 1
               ? '0 1px 3px rgba(0,0,0,0.4)'
               : 'none',
           }} />
@@ -136,7 +137,7 @@ function PokerTable({ heroPosition, holeCards, communityCards, potSize, stackSiz
       maxWidth: 740,
       aspectRatio: isMobile ? '4 / 3' : '16 / 10',
       margin: '0 auto',
-      background: 'radial-gradient(ellipse at center, #101c30 0%, #080e1a 100%)',
+      background: `radial-gradient(ellipse at center, ${colors.bgSurface} 0%, ${colors.bgDeep} 100%)`,
       borderRadius: 20,
       overflow: 'visible',
       padding: 4,
@@ -144,19 +145,19 @@ function PokerTable({ heroPosition, holeCards, communityCards, potSize, stackSiz
       {/* Outer rim */}
       <div style={{
         position: 'absolute', inset: 0, borderRadius: 20,
-        border: '2px solid rgba(100,160,255,0.08)', pointerEvents: 'none',
+        border: `2px solid ${colors.cyanBorder}`, pointerEvents: 'none',
       }} />
 
-      {/* Green felt */}
+      {/* Felt */}
       <div style={{
         position: 'absolute', top: '14%', left: '12%', right: '12%', bottom: '14%',
-        background: 'radial-gradient(ellipse at 50% 48%, #1e7a44 0%, #176838 35%, #115a2e 60%, #0d4a24 80%, #093d1c 100%)',
-        borderRadius: '50%', border: '5px solid #1a2a10',
-        boxShadow: 'inset 0 0 30px rgba(0,0,0,0.35), 0 0 0 6px #1e2d48, 0 0 0 8px #141e30, 0 0 50px rgba(0,0,0,0.6)',
+        background: colors.felt,
+        borderRadius: '50%', border: `5px solid ${colors.feltBorder}`,
+        boxShadow: `inset 0 0 30px rgba(0,0,0,0.35), 0 0 0 6px ${colors.bgSurface}, 0 0 0 8px ${colors.bgBase}, 0 0 50px rgba(0,0,0,0.6)`,
       }}>
         <div style={{
           position: 'absolute', inset: -3, borderRadius: '50%',
-          border: '1.5px solid rgba(80,200,255,0.08)', pointerEvents: 'none',
+          border: `1.5px solid ${colors.cyanBorder}`, pointerEvents: 'none',
         }} />
       </div>
 
@@ -172,8 +173,8 @@ function PokerTable({ heroPosition, holeCards, communityCards, potSize, stackSiz
           [0,1,2,3,4].map(i => (
             <div key={i} style={{
               width: isMobile ? 28 : 40, height: isMobile ? 40 : 56, borderRadius: 5,
-              border: '1px solid rgba(255,255,255,0.06)',
-              background: 'rgba(0,0,0,0.12)',
+              border: `1px solid ${colors.border}`,
+              background: 'rgba(0,0,0,0.2)',
             }} />
           ))
         )}
@@ -185,13 +186,13 @@ function PokerTable({ heroPosition, holeCards, communityCards, potSize, stackSiz
         transform: 'translate(-50%, -50%)', zIndex: 10,
       }}>
         <div style={{
-          background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(255,255,255,0.12)',
+          background: 'rgba(0,0,0,0.6)', border: `1px solid ${colors.borderLight}`,
           borderRadius: 16, padding: isMobile ? '2px 10px' : '3px 14px',
           display: 'flex', alignItems: 'center', gap: isMobile ? 3 : 5,
         }}>
-          <span style={{ color: '#8899aa', fontSize: isMobile ? 8 : 10, fontWeight: 700, textTransform: 'uppercase' }}>Pot</span>
-          <span style={{ color: '#f1c40f', fontSize: isMobile ? 13 : 16, fontWeight: 800 }}>{potSize}</span>
-          <span style={{ color: '#8899aa', fontSize: isMobile ? 8 : 10 }}>BB</span>
+          <span style={{ color: colors.textMuted, fontSize: isMobile ? 8 : 10, fontWeight: 700, textTransform: 'uppercase', fontFamily: fonts.heading }}>Pot</span>
+          <span style={{ color: colors.gold, fontSize: isMobile ? 13 : 16, fontWeight: 800, fontFamily: fonts.heading }}>{potSize}</span>
+          <span style={{ color: colors.textMuted, fontSize: isMobile ? 8 : 10, fontFamily: fonts.heading }}>BB</span>
         </div>
       </div>
 
@@ -242,15 +243,15 @@ function PokerTable({ heroPosition, holeCards, communityCards, potSize, stackSiz
                   {holeCards.map((card, i) => <Card key={i} card={card} size={heroCardSize} />)}
                 </div>
                 <div style={{
-                  background: 'linear-gradient(180deg, rgba(0,0,0,0.8), rgba(0,0,0,0.9))',
-                  border: '2px solid #3498db', borderRadius: isMobile ? 6 : 8,
+                  background: `linear-gradient(180deg, rgba(0,0,0,0.8), ${colors.bgDeep})`,
+                  border: `2px solid ${colors.cyan}`, borderRadius: isMobile ? 6 : 8,
                   padding: isMobile ? '2px 8px' : '4px 14px', textAlign: 'center',
-                  boxShadow: '0 0 14px rgba(52,152,219,0.35)', minWidth: isMobile ? 56 : 80,
+                  boxShadow: `0 0 14px rgba(0, 229, 255, 0.35)`, minWidth: isMobile ? 56 : 80,
                 }}>
-                  <div style={{ color: '#fff', fontSize: isMobile ? 10 : 13, fontWeight: 800, letterSpacing: 0.5 }}>YOU</div>
+                  <div style={{ color: '#fff', fontSize: isMobile ? 10 : 13, fontWeight: 800, letterSpacing: 0.5, fontFamily: fonts.heading }}>YOU</div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: isMobile ? 4 : 6 }}>
-                    <span style={{ color: '#3498db', fontSize: isMobile ? 9 : 12, fontWeight: 700 }}>{pos}</span>
-                    <span style={{ color: '#ddd', fontSize: isMobile ? 10 : 13, fontWeight: 700 }}>{stackSize} BB</span>
+                    <span style={{ color: colors.cyan, fontSize: isMobile ? 9 : 12, fontWeight: 700, fontFamily: fonts.heading }}>{pos}</span>
+                    <span style={{ color: colors.textPrimary, fontSize: isMobile ? 10 : 13, fontWeight: 700, fontFamily: fonts.heading }}>{stackSize} BB</span>
                   </div>
                 </div>
               </div>
@@ -261,11 +262,11 @@ function PokerTable({ heroPosition, holeCards, communityCards, potSize, stackSiz
                   <Card faceDown size={cardSize} />
                 </div>
                 <div style={{
-                  background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.15)',
+                  background: 'rgba(0,0,0,0.7)', border: `1px solid ${colors.borderLight}`,
                   borderRadius: isMobile ? 5 : 8, padding: isMobile ? '1px 6px' : '3px 10px', textAlign: 'center', minWidth: isMobile ? 40 : 60,
                 }}>
-                  <div style={{ color: '#99aabb', fontSize: isMobile ? 9 : 12, fontWeight: 700 }}>{pos}</div>
-                  <div style={{ color: '#dde', fontSize: isMobile ? 10 : 13, fontWeight: 700 }}>{OPPONENT_STACKS[pos]} BB</div>
+                  <div style={{ color: colors.textSecondary, fontSize: isMobile ? 9 : 12, fontWeight: 700, fontFamily: fonts.heading }}>{pos}</div>
+                  <div style={{ color: colors.textPrimary, fontSize: isMobile ? 10 : 13, fontWeight: 700, fontFamily: fonts.heading }}>{OPPONENT_STACKS[pos]} BB</div>
                 </div>
                 {opponentArchetype && seatIdx === villainSeatIdx && (
                   <div style={{
@@ -275,7 +276,8 @@ function PokerTable({ heroPosition, holeCards, communityCards, potSize, stackSiz
                     borderRadius: isMobile ? 5 : 8,
                     fontSize: isMobile ? 8 : 10,
                     fontWeight: 700,
-                    border: '1px solid rgba(255,255,255,0.15)',
+                    fontFamily: fonts.heading,
+                    border: `1px solid ${colors.borderLight}`,
                     marginTop: 2,
                     whiteSpace: 'nowrap',
                   }}>

@@ -13,6 +13,7 @@ import { SCENARIOS, getRandomScenario } from '../../data/scenarios.js';
 import { OPPONENT_ARCHETYPES } from '../../data/gamification.js';
 import { getSessionGrade } from '../../data/gamification.js';
 import { CHART_LOOSE, CHART_TIGHT, CHART_FACING_RAISE, getHandKey } from '../../data/handCharts.js';
+import { colors, glows, gradients, fonts } from '../../theme.js';
 
 const DIFFICULTIES = ['all', 'beginner', 'intermediate', 'advanced'];
 
@@ -145,9 +146,9 @@ function DrillPage({ user, persistent: parentPersistent, onDashboard }) {
   }
 
   const difficultyColors = {
-    beginner: '#27ae60',
-    intermediate: '#f39c12',
-    advanced: '#e74c3c',
+    beginner: colors.green,
+    intermediate: colors.orange,
+    advanced: colors.red,
   };
 
   const handleEndSession = async () => {
@@ -218,25 +219,26 @@ function DrillPage({ user, persistent: parentPersistent, onDashboard }) {
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto' }}>
+    <div style={{ maxWidth: 900, margin: '0 auto', fontFamily: fonts.body }}>
       {/* Dashboard button */}
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: isMobile ? 6 : 8 }}>
         <button
           onClick={onDashboard}
           style={{
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            color: '#8899aa',
+            background: colors.bgElevated,
+            border: `1px solid ${colors.border}`,
+            color: colors.textSecondary,
             fontSize: isMobile ? 11 : 12,
             fontWeight: 700,
+            fontFamily: fonts.heading,
             padding: isMobile ? '4px 14px' : '5px 18px',
             borderRadius: 8,
             cursor: 'pointer',
             letterSpacing: 0.3,
             transition: 'all 0.15s ease',
           }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
-          onMouseLeave={e => { e.currentTarget.style.color = '#8899aa'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+          onMouseEnter={e => { e.currentTarget.style.color = colors.cyan; e.currentTarget.style.borderColor = colors.cyanBorder; }}
+          onMouseLeave={e => { e.currentTarget.style.color = colors.textSecondary; e.currentTarget.style.borderColor = colors.border; }}
         >
           Dashboard
         </button>
@@ -256,11 +258,13 @@ function DrillPage({ user, persistent: parentPersistent, onDashboard }) {
               key={d}
               onClick={() => setDifficulty(d)}
               style={{
-                padding: isMobile ? '4px 10px' : '5px 14px', borderRadius: 16, border: 'none',
-                background: difficulty === d ? '#2980b9' : 'rgba(255,255,255,0.08)',
-                color: difficulty === d ? '#fff' : '#8899aa',
+                padding: isMobile ? '4px 10px' : '5px 14px', borderRadius: 16,
+                border: difficulty === d ? `1px solid ${colors.cyanBorder}` : '1px solid transparent',
+                background: difficulty === d ? colors.cyanDim : colors.bgElevated,
+                color: difficulty === d ? colors.cyan : colors.textSecondary,
                 cursor: 'pointer', fontSize: isMobile ? 11 : 12, fontWeight: 600,
-                textTransform: 'capitalize',
+                textTransform: 'capitalize', fontFamily: fonts.body,
+                transition: 'all 0.15s ease',
               }}
             >
               {d}
@@ -276,9 +280,9 @@ function DrillPage({ user, persistent: parentPersistent, onDashboard }) {
           <div style={{
             display: 'flex', gap: 6, alignItems: 'center', fontSize: 13,
           }}>
-            <span style={{ color: '#27ae60', fontWeight: 700 }}>{session.correct}</span>
-            <span style={{ color: '#556' }}>/</span>
-            <span style={{ color: '#aab' }}>{session.total}</span>
+            <span style={{ color: colors.green, fontWeight: 700 }}>{session.correct}</span>
+            <span style={{ color: colors.textMuted }}>/</span>
+            <span style={{ color: colors.textSecondary }}>{session.total}</span>
             {session.total > 0 && (
               <span style={{
                 color: sessionGrade.color,
@@ -294,10 +298,13 @@ function DrillPage({ user, persistent: parentPersistent, onDashboard }) {
             <button
               onClick={handleEndSession}
               style={{
-                background: 'none', border: '1px solid rgba(255,255,255,0.12)',
-                color: '#667', fontSize: 11, padding: '3px 8px', borderRadius: 6,
-                cursor: 'pointer', fontWeight: 600,
+                background: 'none', border: `1px solid ${colors.border}`,
+                color: colors.textMuted, fontSize: 11, padding: '3px 8px', borderRadius: 6,
+                cursor: 'pointer', fontWeight: 600, fontFamily: fonts.body,
+                transition: 'all 0.15s ease',
               }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = colors.red; e.currentTarget.style.color = colors.red; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = colors.border; e.currentTarget.style.color = colors.textMuted; }}
             >
               End
             </button>
@@ -309,11 +316,11 @@ function DrillPage({ user, persistent: parentPersistent, onDashboard }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: isMobile ? 6 : 10, marginBottom: isMobile ? 12 : 24,
         padding: isMobile ? '7px 12px' : '10px 16px',
-        background: 'rgba(255,255,255,0.04)',
+        background: colors.bgCard,
         borderRadius: 12,
-        border: '1px solid rgba(255,255,255,0.06)',
+        border: `1px solid ${colors.border}`,
       }}>
-        <h3 style={{ margin: 0, color: '#fff', fontSize: isMobile ? 15 : 18, flex: 1 }}>{scenario.title}</h3>
+        <h3 style={{ margin: 0, color: colors.textPrimary, fontSize: isMobile ? 15 : 18, flex: 1, fontFamily: fonts.heading }}>{scenario.title}</h3>
         <span style={{
           background: difficultyColors[scenario.difficulty], color: '#fff',
           padding: '2px 10px', borderRadius: 10, fontSize: 10, fontWeight: 700,
@@ -322,7 +329,7 @@ function DrillPage({ user, persistent: parentPersistent, onDashboard }) {
           {scenario.difficulty}
         </span>
         <span style={{
-          background: 'rgba(255,255,255,0.12)', color: '#ccc',
+          background: colors.cyanDim, color: colors.cyan,
           padding: '2px 10px', borderRadius: 10, fontSize: 10, fontWeight: 700,
           textTransform: 'uppercase', letterSpacing: 0.5,
         }}>
@@ -349,20 +356,20 @@ function DrillPage({ user, persistent: parentPersistent, onDashboard }) {
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
         margin: isMobile ? '12px 0 10px' : '20px 0 6px',
         padding: isMobile ? '10px 14px' : '12px 20px',
-        background: 'rgba(255,255,255,0.04)',
+        background: colors.bgCard,
         borderRadius: 12,
-        border: '1px solid rgba(255,255,255,0.06)',
+        border: `1px solid ${colors.border}`,
         textAlign: 'center',
       }}>
         <p style={{
-          color: '#fff', margin: 0, fontSize: isMobile ? 15 : 17, lineHeight: 1.4,
-          fontWeight: 700,
+          color: colors.textPrimary, margin: 0, fontSize: isMobile ? 15 : 17, lineHeight: 1.4,
+          fontWeight: 700, fontFamily: fonts.heading,
         }}>
           {scenario.description}
         </p>
         {scenario.toCall > 0 && (
           <span style={{
-            background: 'rgba(243,156,18,0.2)', color: '#f39c12',
+            background: colors.orangeDim, color: colors.orange,
             padding: '3px 12px', borderRadius: 10, fontSize: isMobile ? 12 : 13, fontWeight: 700,
           }}>
             {scenario.toCall} BB to call
@@ -397,22 +404,25 @@ function DrillPage({ user, persistent: parentPersistent, onDashboard }) {
         return (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 50,
-          background: 'rgba(0,0,0,0.6)',
+          background: 'rgba(0,0,0,0.7)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: 16,
         }}>
           <div style={{
-            background: isCorrect ? 'linear-gradient(135deg, #0d2818 0%, #112e1e 100%)' : 'linear-gradient(135deg, #2a0f0f 0%, #1e1010 100%)',
-            border: `2px solid ${isCorrect ? '#27ae60' : '#e74c3c'}`,
+            background: isCorrect
+              ? `linear-gradient(135deg, ${colors.bgDeep} 0%, rgba(0, 50, 30, 0.9) 100%)`
+              : `linear-gradient(135deg, ${colors.bgDeep} 0%, rgba(50, 10, 10, 0.9) 100%)`,
+            border: `2px solid ${isCorrect ? colors.green : colors.red}`,
             borderRadius: 16, padding: isMobile ? 18 : 24, maxWidth: 480, width: '100%',
             maxHeight: '85vh', overflowY: 'auto',
-            boxShadow: `0 8px 32px rgba(0,0,0,0.5), 0 0 20px ${isCorrect ? 'rgba(39,174,96,0.15)' : 'rgba(231,76,60,0.15)'}`,
+            boxShadow: `0 8px 32px rgba(0,0,0,0.5), 0 0 20px ${isCorrect ? 'rgba(0,230,118,0.15)' : 'rgba(255,23,68,0.15)'}`,
+            fontFamily: fonts.body,
           }}>
             {/* Header: icon + result + XP */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <span style={{
                 width: 40, height: 40, borderRadius: '50%',
-                background: isCorrect ? '#27ae60' : '#e74c3c',
+                background: isCorrect ? colors.green : colors.red,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 22, color: '#fff', fontWeight: 700, flexShrink: 0,
               }}>
@@ -420,14 +430,16 @@ function DrillPage({ user, persistent: parentPersistent, onDashboard }) {
               </span>
               <div style={{ flex: 1 }}>
                 <div style={{
-                  color: isCorrect ? '#27ae60' : '#e74c3c',
+                  color: isCorrect ? colors.green : colors.red,
                   fontSize: isMobile ? 20 : 22, fontWeight: 800, letterSpacing: 0.3,
+                  fontFamily: fonts.heading,
                 }}>
                   {isCorrect ? 'Correct!' : 'Not Optimal'}
                 </div>
                 {levelUpName && (
                   <div style={{
-                    color: '#ffd700', fontSize: 12, fontWeight: 700, marginTop: 2,
+                    color: colors.gold, fontSize: 12, fontWeight: 700, marginTop: 2,
+                    fontFamily: fonts.heading,
                   }}>
                     Level Up! You are now a {levelUpName}
                   </div>
@@ -435,10 +447,10 @@ function DrillPage({ user, persistent: parentPersistent, onDashboard }) {
               </div>
               {lastXpEarned !== 0 && (
                 <div style={{
-                  background: lastXpEarned > 0 ? 'rgba(255,215,0,0.15)' : 'rgba(231,76,60,0.15)',
-                  color: lastXpEarned > 0 ? '#ffd700' : '#e74c3c',
+                  background: lastXpEarned > 0 ? 'rgba(255,215,0,0.15)' : colors.redDim,
+                  color: lastXpEarned > 0 ? colors.gold : colors.red,
                   padding: '4px 10px', borderRadius: 8, fontSize: 14, fontWeight: 800,
-                  border: `1px solid ${lastXpEarned > 0 ? 'rgba(255,215,0,0.3)' : 'rgba(231,76,60,0.3)'}`,
+                  border: `1px solid ${lastXpEarned > 0 ? 'rgba(255,215,0,0.3)' : 'rgba(255,23,68,0.3)'}`,
                 }}>
                   {lastXpEarned > 0 ? '+' : ''}{lastXpEarned} XP
                 </div>
@@ -450,14 +462,14 @@ function DrillPage({ user, persistent: parentPersistent, onDashboard }) {
               <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                 marginBottom: 12, padding: '6px 0',
-                background: 'rgba(255,140,0,0.08)', borderRadius: 8,
+                background: colors.orangeDim, borderRadius: 8,
               }}>
                 <span>{'\u2728'}</span>
-                <span style={{ color: '#ff9800', fontSize: 13, fontWeight: 700 }}>
+                <span style={{ color: colors.orange, fontSize: 13, fontWeight: 700 }}>
                   {session.streak} Streak
                 </span>
                 {session.streak > 5 && (
-                  <span style={{ color: '#ff6d00', fontSize: 11 }}>
+                  <span style={{ color: colors.orangeLight, fontSize: 11 }}>
                     ({session.streak >= 20 ? '3x' : session.streak >= 10 ? '2x' : session.streak >= 5 ? '1.5x' : '1.2x'} XP)
                   </span>
                 )}
@@ -468,29 +480,29 @@ function DrillPage({ user, persistent: parentPersistent, onDashboard }) {
             {!isCorrect && (
               <div style={{
                 display: 'flex', gap: 8, marginBottom: 16,
-                background: 'rgba(0,0,0,0.25)', borderRadius: 10, padding: '10px 14px',
-                border: '1px solid rgba(255,255,255,0.06)',
+                background: 'rgba(0,0,0,0.3)', borderRadius: 10, padding: '10px 14px',
+                border: `1px solid ${colors.border}`,
               }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ color: '#889', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 }}>Your choice</div>
-                  <div style={{ color: '#e74c3c', fontSize: isMobile ? 14 : 15, fontWeight: 700 }}>{yourLabel}</div>
+                  <div style={{ color: colors.textMuted, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 }}>Your choice</div>
+                  <div style={{ color: colors.red, fontSize: isMobile ? 14 : 15, fontWeight: 700 }}>{yourLabel}</div>
                 </div>
-                <div style={{ width: 1, background: 'rgba(255,255,255,0.1)' }} />
+                <div style={{ width: 1, background: colors.border }} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ color: '#889', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 }}>Recommended</div>
-                  <div style={{ color: '#27ae60', fontSize: isMobile ? 14 : 15, fontWeight: 700 }}>{correctLabel}</div>
+                  <div style={{ color: colors.textMuted, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 }}>Recommended</div>
+                  <div style={{ color: colors.green, fontSize: isMobile ? 14 : 15, fontWeight: 700 }}>{correctLabel}</div>
                 </div>
               </div>
             )}
 
             {/* Key takeaway */}
             <div style={{
-              background: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: '10px 14px',
-              borderLeft: `3px solid ${isCorrect ? '#27ae60' : '#f39c12'}`,
+              background: colors.bgElevated, borderRadius: 10, padding: '10px 14px',
+              borderLeft: `3px solid ${isCorrect ? colors.green : colors.orange}`,
               marginBottom: 12,
             }}>
-              <div style={{ color: '#f39c12', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Key Takeaway</div>
-              <div style={{ color: '#eee', fontSize: isMobile ? 14 : 15, fontWeight: 600, lineHeight: 1.5 }}>
+              <div style={{ color: colors.orange, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Key Takeaway</div>
+              <div style={{ color: colors.textPrimary, fontSize: isMobile ? 14 : 15, fontWeight: 600, lineHeight: 1.5 }}>
                 {keySentence}
               </div>
             </div>
@@ -498,7 +510,7 @@ function DrillPage({ user, persistent: parentPersistent, onDashboard }) {
             {/* Detailed explanation */}
             {restSentences && (
               <div style={{
-                color: '#bbc5cf', fontSize: isMobile ? 13 : 14, lineHeight: 1.65,
+                color: colors.textSecondary, fontSize: isMobile ? 13 : 14, lineHeight: 1.65,
                 padding: '0 2px',
               }}>
                 {restSentences}
@@ -510,10 +522,13 @@ function DrillPage({ user, persistent: parentPersistent, onDashboard }) {
                 <button
                   onClick={() => setShowChart(!showChart)}
                   style={{
-                    background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
-                    color: '#aab', padding: '8px 16px', borderRadius: 8, cursor: 'pointer',
-                    fontSize: 13,
+                    background: colors.bgElevated, border: `1px solid ${colors.borderLight}`,
+                    color: colors.textSecondary, padding: '8px 16px', borderRadius: 8, cursor: 'pointer',
+                    fontSize: 13, fontFamily: fonts.body,
+                    transition: 'all 0.15s ease',
                   }}
+                  onMouseEnter={e => { e.currentTarget.style.color = colors.cyan; e.currentTarget.style.borderColor = colors.cyanBorder; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = colors.textSecondary; e.currentTarget.style.borderColor = colors.borderLight; }}
                 >
                   {showChart ? 'Hide' : 'Show'} {chartName}
                 </button>
@@ -529,9 +544,15 @@ function DrillPage({ user, persistent: parentPersistent, onDashboard }) {
               onClick={loadNext}
               style={{
                 marginTop: 16, padding: '12px 32px', fontSize: 16, fontWeight: 700,
-                borderRadius: 12, border: 'none', background: '#2980b9', color: '#fff',
+                borderRadius: 12, border: 'none',
+                background: gradients.primaryButton, color: '#fff',
                 cursor: 'pointer', width: '100%',
+                boxShadow: glows.button,
+                fontFamily: fonts.heading,
+                transition: 'all 0.15s ease',
               }}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow = glows.cyanStrong; }}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow = glows.button; }}
             >
               Next Scenario
             </button>

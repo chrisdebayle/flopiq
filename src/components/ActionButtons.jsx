@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { colors, glows, fonts } from '../theme.js';
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 480);
@@ -50,6 +51,13 @@ function getOptions(street, toCall) {
   return POST_RAISE_OPTIONS;
 }
 
+const actionGlows = {
+  fold: `0 0 12px rgba(74, 90, 110, 0.3), 0 0 4px rgba(74, 90, 110, 0.15)`,
+  check: `0 0 12px rgba(179, 136, 255, 0.3), 0 0 4px rgba(179, 136, 255, 0.15)`,
+  call: `0 0 12px rgba(0, 230, 118, 0.3), 0 0 4px rgba(0, 230, 118, 0.15)`,
+  raise: glows.orange,
+};
+
 function ActionButtons({
   disabledActions = [],
   onAction,
@@ -67,10 +75,10 @@ function ActionButtons({
   const options = getOptions(street, toCall);
 
   const actionStyles = {
-    fold: { bg: '#95a5a6', label: 'Fold' },
-    check: { bg: '#8e44ad', label: 'Check' },
-    call: { bg: '#27ae60', label: 'Call' },
-    raise: { bg: '#2980b9', label: raiseLabel },
+    fold: { bg: colors.textMuted, label: 'Fold' },
+    check: { bg: colors.purple, label: 'Check' },
+    call: { bg: colors.green, label: 'Call' },
+    raise: { bg: colors.orange, label: raiseLabel },
   };
 
   function handleBetTypeSelect(betType) {
@@ -126,14 +134,19 @@ function ActionButtons({
                 padding: isMobile ? '10px 24px' : '14px 32px',
                 fontSize: isMobile ? 15 : 18,
                 fontWeight: 700,
+                fontFamily: fonts.heading,
                 borderRadius: 12,
-                border: isSelected ? '3px solid #fff' : '2px solid transparent',
-                background: isUnavailable ? '#3a3f47' : style.bg,
-                color: isUnavailable ? '#666' : '#fff',
+                border: isSelected ? `3px solid ${colors.cyan}` : '2px solid transparent',
+                background: isUnavailable ? colors.bgSurface : style.bg,
+                color: isUnavailable ? colors.textMuted : '#fff',
                 cursor: isDisabled ? 'not-allowed' : 'pointer',
                 opacity: disabled && !isUnavailable ? 0.5 : 1,
                 transition: 'all 0.15s ease',
-                boxShadow: isSelected ? '0 0 16px rgba(255,255,255,0.3)' : '0 2px 8px rgba(0,0,0,0.2)',
+                boxShadow: isSelected
+                  ? glows.cyan
+                  : isUnavailable
+                    ? '0 2px 8px rgba(0,0,0,0.2)'
+                    : `${actionGlows[action]}, 0 2px 8px rgba(0,0,0,0.2)`,
                 minWidth: isMobile ? 0 : 100,
                 width: isMobile ? '100%' : 'auto',
                 textTransform: 'uppercase',
@@ -150,12 +163,13 @@ function ActionButtons({
       {showBetOptions && !disabled && (
         <div style={{
           display: 'flex', flexDirection: 'column', gap: 6,
-          background: 'rgba(41,128,185,0.1)', borderRadius: 12, padding: isMobile ? '10px 10px' : '12px 16px',
-          border: '1px solid rgba(41,128,185,0.25)',
+          background: colors.orangeDim, borderRadius: 12, padding: isMobile ? '10px 10px' : '12px 16px',
+          border: `1px solid ${colors.orangeBorder}`,
           width: isMobile ? '100%' : 'auto', maxWidth: 500,
         }}>
           <span style={{
-            color: '#7fb3d8', fontSize: isMobile ? 11 : 13, fontWeight: 700,
+            color: colors.orange, fontSize: isMobile ? 11 : 13, fontWeight: 700,
+            fontFamily: fonts.heading,
             textTransform: 'uppercase', letterSpacing: 0.5, textAlign: 'center',
           }}>
             What type of {raiseLabel.toLowerCase()}?
@@ -173,11 +187,11 @@ function ActionButtons({
                   padding: isMobile ? '8px 12px' : '10px 16px',
                   borderRadius: 10,
                   border: opt.value === 'allin'
-                    ? '1px solid rgba(231,76,60,0.5)'
-                    : '1px solid rgba(41,128,185,0.35)',
+                    ? `1px solid ${colors.red}`
+                    : `1px solid ${colors.orangeBorder}`,
                   background: opt.value === 'allin'
-                    ? 'rgba(231,76,60,0.2)'
-                    : 'rgba(41,128,185,0.15)',
+                    ? colors.redDim
+                    : colors.orangeDim,
                   color: '#fff',
                   cursor: 'pointer',
                   transition: 'all 0.12s ease',
@@ -185,18 +199,18 @@ function ActionButtons({
                   display: 'flex', flexDirection: 'column', gap: 2,
                 }}
                 onMouseEnter={e => e.currentTarget.style.background = opt.value === 'allin'
-                  ? 'rgba(231,76,60,0.4)' : 'rgba(41,128,185,0.35)'}
+                  ? 'rgba(255,23,68,0.4)' : 'rgba(255,140,0,0.35)'}
                 onMouseLeave={e => e.currentTarget.style.background = opt.value === 'allin'
-                  ? 'rgba(231,76,60,0.2)' : 'rgba(41,128,185,0.15)'}
+                  ? colors.redDim : colors.orangeDim}
               >
-                <span style={{ fontSize: isMobile ? 14 : 15, fontWeight: 700 }}>{opt.label}</span>
+                <span style={{ fontSize: isMobile ? 14 : 15, fontWeight: 700, fontFamily: fonts.heading }}>{opt.label}</span>
                 <span style={{
-                  fontSize: isMobile ? 10 : 11, color: opt.value === 'allin' ? '#f08080' : '#8bbde0',
+                  fontSize: isMobile ? 10 : 11, color: opt.value === 'allin' ? '#f08080' : colors.orangeLight,
                   fontWeight: 600,
                 }}>
                   {opt.sizing}
                 </span>
-                <span style={{ fontSize: isMobile ? 9 : 10, color: '#778899', fontStyle: 'italic' }}>
+                <span style={{ fontSize: isMobile ? 9 : 10, color: colors.textMuted, fontStyle: 'italic' }}>
                   {opt.desc}
                 </span>
               </button>
