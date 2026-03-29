@@ -3,7 +3,7 @@ import useAuth from './hooks/useAuth.js';
 import WelcomeScreen from './features/welcome/WelcomeScreen.jsx';
 import HomeScreen from './features/home/HomeScreen.jsx';
 import DrillPage from './features/drills/DrillPage.jsx';
-import { getProfile, upsertProfile, trackEvent } from './lib/supabase.js';
+import { getProfile, upsertProfile, getPlayerBreakdown, trackEvent } from './lib/supabase.js';
 import './App.css';
 
 function App() {
@@ -13,14 +13,18 @@ function App() {
     totalXp: 0, bestStreakAllTime: 0, totalSessions: 0,
     totalCorrect: 0, totalAnswered: 0, bestSessionPct: 0,
   });
+  const [breakdown, setBreakdown] = useState({ byStreet: {}, byOpponent: {} });
 
   // Once user is loaded, determine screen and fetch profile
   useEffect(() => {
     if (loading) return;
     if (isLoggedIn) {
       setScreen('home');
-      // Fetch profile from Supabase
-      getProfile(user.id).then(profile => {
+      // Fetch profile + breakdown from Supabase
+      Promise.all([
+        getProfile(user.id),
+        getPlayerBreakdown(user.id),
+      ]).then(([profile, bd]) => {
         if (profile) {
           setPersistent({
             totalXp: profile.total_xp || 0,
@@ -31,6 +35,7 @@ function App() {
             bestSessionPct: profile.best_session_pct || 0,
           });
         }
+        if (bd) setBreakdown(bd);
       }).catch(err => console.warn('Profile fetch error:', err.message));
       trackEvent(user.id, 'session_restore', { method: 'anonymous' });
     } else {
@@ -67,10 +72,13 @@ function App() {
   }
 
   async function handleBackToHome() {
-    // Refresh profile from Supabase to get latest stats
+    // Refresh profile + breakdown from Supabase to get latest stats
     if (user) {
       try {
-        const profile = await getProfile(user.id);
+        const [profile, bd] = await Promise.all([
+          getProfile(user.id),
+          getPlayerBreakdown(user.id),
+        ]);
         if (profile) {
           setPersistent({
             totalXp: profile.total_xp || 0,
@@ -81,6 +89,7 @@ function App() {
             bestSessionPct: profile.best_session_pct || 0,
           });
         }
+        if (bd) setBreakdown(bd);
       } catch (err) {
         console.warn('Profile refresh error:', err.message);
       }
@@ -126,6 +135,7 @@ function App() {
           <HomeScreen
             user={user}
             persistent={persistent}
+            breakdown={breakdown}
             onStartDrills={handleStartDrills}
             onLogout={handleLogout}
           />

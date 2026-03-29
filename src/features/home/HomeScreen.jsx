@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getLevel, OPPONENT_ARCHETYPES } from '../../data/gamification.js';
+import { getLevel, OPPONENT_ARCHETYPES, getUnlockedAchievements, ACHIEVEMENTS } from '../../data/gamification.js';
 import { SCENARIOS } from '../../data/scenarios.js';
 import Leaderboard from '../../components/Leaderboard.jsx';
 import { colors, glows, gradients, fonts } from '../../theme.js';
@@ -14,7 +14,12 @@ function useIsMobile() {
   return isMobile;
 }
 
-export default function HomeScreen({ user, persistent, onStartDrills, onLogout }) {
+const STREET_ORDER = ['preflop', 'flop', 'turn', 'river'];
+const STREET_LABELS = { preflop: 'Preflop', flop: 'Flop', turn: 'Turn', river: 'River' };
+
+const OPPONENT_ORDER = ['nit', 'fish', 'tag', 'lag', 'weakTight'];
+
+export default function HomeScreen({ user, persistent, breakdown = {}, onStartDrills, onLogout }) {
   const isMobile = useIsMobile();
   const level = getLevel(persistent.totalXp);
   const accuracy = persistent.totalAnswered > 0
@@ -26,8 +31,17 @@ export default function HomeScreen({ user, persistent, onStartDrills, onLogout }
   });
   const [archetypesOpen, setArchetypesOpen] = useState(false);
 
+  // Achievements
+  const unlocked = getUnlockedAchievements(persistent, breakdown);
+  const unlockedIds = new Set(unlocked.map(a => a.id));
+  const totalAchievements = ACHIEVEMENTS.length;
+
+  // Check if breakdowns have any data
+  const hasStreetData = Object.keys(breakdown.byStreet || {}).length > 0;
+  const hasOpponentData = Object.keys(breakdown.byOpponent || {}).length > 0;
+
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto' }}>
+    <div style={{ maxWidth: 900, margin: '0 auto', fontFamily: fonts.body }}>
       {/* Player card */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: isMobile ? 12 : 20,
@@ -133,6 +147,182 @@ export default function HomeScreen({ user, persistent, onStartDrills, onLogout }
       >
         Start Drills
       </button>
+
+      {/* === Per-Street Accuracy === */}
+      {hasStreetData && (
+        <div style={{
+          background: colors.bgCard,
+          borderRadius: 14, border: `1px solid ${colors.border}`,
+          padding: isMobile ? '14px 14px' : '18px 20px',
+          marginBottom: isMobile ? 12 : 16,
+        }}>
+          <div style={{
+            fontSize: isMobile ? 13 : 14, fontWeight: 800, color: colors.textPrimary,
+            fontFamily: fonts.heading, letterSpacing: 0.3, marginBottom: 12,
+            textTransform: 'uppercase', fontSize: 11,
+          }}>
+            Accuracy by Street
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {STREET_ORDER.map(street => {
+              const data = (breakdown.byStreet || {})[street];
+              if (!data || data.total === 0) return (
+                <div key={street} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ width: 60, fontSize: 12, color: colors.textMuted, fontWeight: 600, textTransform: 'capitalize', fontFamily: fonts.heading }}>{STREET_LABELS[street]}</span>
+                  <div style={{ flex: 1, height: 8, borderRadius: 4, background: 'rgba(0,0,0,0.3)' }} />
+                  <span style={{ width: 36, fontSize: 12, color: colors.textMuted, textAlign: 'right' }}>-</span>
+                </div>
+              );
+              const pct = Math.round((data.correct / data.total) * 100);
+              const barColor = pct >= 80 ? colors.green : pct >= 60 ? colors.orange : colors.red;
+              return (
+                <div key={street} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ width: 60, fontSize: 12, color: colors.textSecondary, fontWeight: 600, textTransform: 'capitalize', fontFamily: fonts.heading }}>{STREET_LABELS[street]}</span>
+                  <div style={{ flex: 1, height: 8, borderRadius: 4, background: 'rgba(0,0,0,0.3)', overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%', borderRadius: 4, width: `${pct}%`,
+                      background: barColor,
+                      transition: 'width 0.5s ease',
+                    }} />
+                  </div>
+                  <span style={{ width: 36, fontSize: 12, color: colors.textSecondary, fontWeight: 700, textAlign: 'right' }}>{pct}%</span>
+                  <span style={{ width: 34, fontSize: 11, color: colors.textMuted, textAlign: 'right' }}>{data.correct}/{data.total}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* === Per-Opponent Accuracy === */}
+      {hasOpponentData && (
+        <div style={{
+          background: colors.bgCard,
+          borderRadius: 14, border: `1px solid ${colors.border}`,
+          padding: isMobile ? '14px 14px' : '18px 20px',
+          marginBottom: isMobile ? 12 : 16,
+        }}>
+          <div style={{
+            fontWeight: 800, color: colors.textPrimary,
+            fontFamily: fonts.heading, letterSpacing: 0.3, marginBottom: 12,
+            textTransform: 'uppercase', fontSize: 11,
+          }}>
+            Accuracy by Opponent
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {OPPONENT_ORDER.map(key => {
+              const arch = OPPONENT_ARCHETYPES[key];
+              const data = (breakdown.byOpponent || {})[key];
+              if (!data || data.total === 0) return (
+                <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ width: 18, fontSize: 14, textAlign: 'center' }}>{arch.emoji}</span>
+                  <span style={{ width: 42, fontSize: 11, color: colors.textMuted, fontWeight: 600, fontFamily: fonts.heading }}>{arch.shortLabel}</span>
+                  <div style={{ flex: 1, height: 8, borderRadius: 4, background: 'rgba(0,0,0,0.3)' }} />
+                  <span style={{ width: 36, fontSize: 12, color: colors.textMuted, textAlign: 'right' }}>-</span>
+                </div>
+              );
+              const pct = Math.round((data.correct / data.total) * 100);
+              const barColor = pct >= 80 ? colors.green : pct >= 60 ? colors.orange : colors.red;
+              return (
+                <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ width: 18, fontSize: 14, textAlign: 'center' }}>{arch.emoji}</span>
+                  <span style={{ width: 42, fontSize: 11, color: arch.color, fontWeight: 600, fontFamily: fonts.heading }}>{arch.shortLabel}</span>
+                  <div style={{ flex: 1, height: 8, borderRadius: 4, background: 'rgba(0,0,0,0.3)', overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%', borderRadius: 4, width: `${pct}%`,
+                      background: barColor,
+                      transition: 'width 0.5s ease',
+                    }} />
+                  </div>
+                  <span style={{ width: 36, fontSize: 12, color: colors.textSecondary, fontWeight: 700, textAlign: 'right' }}>{pct}%</span>
+                  <span style={{ width: 34, fontSize: 11, color: colors.textMuted, textAlign: 'right' }}>{data.correct}/{data.total}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* === Achievements === */}
+      <div style={{
+        background: colors.bgCard,
+        borderRadius: 14, border: `1px solid ${colors.border}`,
+        padding: isMobile ? '14px 14px' : '18px 20px',
+        marginBottom: isMobile ? 12 : 16,
+      }}>
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          marginBottom: 14,
+        }}>
+          <span style={{
+            fontWeight: 800, color: colors.textPrimary,
+            fontFamily: fonts.heading, letterSpacing: 0.3,
+            textTransform: 'uppercase', fontSize: 11,
+          }}>
+            Achievements
+          </span>
+          <span style={{
+            fontSize: 11, color: colors.textMuted, fontWeight: 600,
+          }}>
+            {unlocked.length} / {totalAchievements}
+          </span>
+        </div>
+
+        {/* Unlocked badges */}
+        {unlocked.length > 0 && (
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', gap: isMobile ? 6 : 8,
+            marginBottom: unlocked.length < totalAchievements ? 14 : 0,
+          }}>
+            {unlocked.map(a => (
+              <div key={a.id} title={`${a.name}: ${a.desc}`} style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: isMobile ? '5px 10px' : '6px 12px',
+                background: colors.bgElevated,
+                borderRadius: 8,
+                border: `1px solid ${colors.cyanBorder}`,
+                boxShadow: `0 0 6px ${colors.cyanDim}`,
+              }}>
+                <span style={{ fontSize: isMobile ? 16 : 18 }}>{a.emoji}</span>
+                <span style={{ fontSize: isMobile ? 10 : 11, color: colors.textPrimary, fontWeight: 700, fontFamily: fonts.heading }}>{a.name}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Locked badges (show next few) */}
+        {unlocked.length < totalAchievements && (
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', gap: isMobile ? 6 : 8,
+          }}>
+            {ACHIEVEMENTS.filter(a => !unlockedIds.has(a.id)).slice(0, isMobile ? 4 : 6).map(a => (
+              <div key={a.id} title={`${a.name}: ${a.desc}`} style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: isMobile ? '5px 10px' : '6px 12px',
+                background: 'rgba(0,0,0,0.2)',
+                borderRadius: 8,
+                border: `1px solid ${colors.border}`,
+                opacity: 0.5,
+              }}>
+                <span style={{ fontSize: isMobile ? 16 : 18, filter: 'grayscale(1)' }}>🔒</span>
+                <span style={{ fontSize: isMobile ? 10 : 11, color: colors.textMuted, fontWeight: 600, fontFamily: fonts.heading }}>{a.name}</span>
+              </div>
+            ))}
+            {ACHIEVEMENTS.filter(a => !unlockedIds.has(a.id)).length > (isMobile ? 4 : 6) && (
+              <span style={{ fontSize: 11, color: colors.textMuted, alignSelf: 'center', padding: '0 4px' }}>
+                +{ACHIEVEMENTS.filter(a => !unlockedIds.has(a.id)).length - (isMobile ? 4 : 6)} more
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Empty state */}
+        {unlocked.length === 0 && (
+          <div style={{ fontSize: 12, color: colors.textMuted, textAlign: 'center', padding: '4px 0' }}>
+            Start playing to unlock achievements!
+          </div>
+        )}
+      </div>
 
       {/* Leaderboard */}
       <Leaderboard userId={user.id} isMobile={isMobile} />

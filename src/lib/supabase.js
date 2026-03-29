@@ -180,6 +180,48 @@ export async function saveScenarioResults(userId, sessionId, results) {
   if (error) throw error;
 }
 
+// ── Scenario breakdown (for dashboard stats) ──
+
+export async function getPlayerBreakdown(userId) {
+  if (!supabase) return { byStreet: {}, byOpponent: {} };
+
+  // 1. Per-street: aggregate category_breakdown from all sessions
+  const { data: sessions, error: sessErr } = await supabase
+    .from('sessions')
+    .select('category_breakdown')
+    .eq('user_id', userId);
+
+  const byStreet = {};
+  if (!sessErr && sessions) {
+    for (const s of sessions) {
+      const cb = s.category_breakdown || {};
+      for (const [street, stats] of Object.entries(cb)) {
+        if (!byStreet[street]) byStreet[street] = { correct: 0, total: 0 };
+        byStreet[street].correct += stats.correct || 0;
+        byStreet[street].total += stats.total || 0;
+      }
+    }
+  }
+
+  // 2. Per-opponent: aggregate from scenario_results
+  const { data: results, error: resErr } = await supabase
+    .from('scenario_results')
+    .select('correct, opponent_type')
+    .eq('user_id', userId);
+
+  const byOpponent = {};
+  if (!resErr && results) {
+    for (const r of results) {
+      const opp = r.opponent_type || 'unknown';
+      if (!byOpponent[opp]) byOpponent[opp] = { correct: 0, total: 0 };
+      byOpponent[opp].total++;
+      if (r.correct) byOpponent[opp].correct++;
+    }
+  }
+
+  return { byStreet, byOpponent };
+}
+
 // ── Analytics ──
 
 export async function trackEvent(userId, eventType, metadata = {}) {

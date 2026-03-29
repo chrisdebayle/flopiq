@@ -49,6 +49,18 @@ function DrillPage({ user, persistent: parentPersistent, onDashboard }) {
     if (parentPersistent) syncPersistent(parentPersistent);
   }, [parentPersistent, syncPersistent]);
 
+  // Auto-save profile every 5 answers to prevent data loss on browser close
+  useEffect(() => {
+    if (session.total > 0 && session.total % 5 === 0 && user) {
+      upsertProfile(user.id, {
+        total_xp: persistent.totalXp,
+        best_streak: persistent.bestStreakAllTime,
+        total_correct: persistent.totalCorrect,
+        total_answered: persistent.totalAnswered,
+      }).catch(err => console.warn('Auto-save error:', err.message));
+    }
+  }, [session.total, user, persistent]);
+
   const isMobile = useIsMobile();
 
   const loadNext = useCallback(() => {
