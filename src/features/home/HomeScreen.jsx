@@ -368,23 +368,16 @@ export default function HomeScreen({ user, persistent, breakdown = {}, onStartDr
               <div style={{ borderTop: `1px solid ${colors.border}`, marginBottom: 4 }} />
 
               {[
-                { icon: '\u{1F3AF}', text: `${SCENARIOS.length} scenarios across 5 opponent archetypes. Read your opponent. Exploit their leaks. Make the right decision.` },
-                { icon: '\u{1F525}', text: 'Face Nits, Calling Stations, TAGs, LAGs, and ABC players — each demands a different strategy.' },
-                { icon: '\u{1F4C8}', text: 'Track streaks, earn XP, and climb the ranks from Fish to GTO Wizard.' },
-                { icon: '\u{1F9E0}', text: 'Built for grinders who want an edge — and beginners ready to build one.' },
-              ].map((item, i) => (
-                <div key={i} style={{
-                  display: 'flex', alignItems: 'flex-start', gap: isMobile ? 10 : 12,
+                `FlopIQ is built to help poker players level up with smart, engaging training that turns post-flop decision-making into a skill they can actually master. With ${SCENARIOS.length} scenarios across 5 opponent archetypes, you'll learn to spot leaks, adapt to different player types, and make sharper decisions with confidence.`,
+                'Whether you\'re facing Nits, Calling Stations, TAGs, LAGs, or ABC players, FlopIQ gives you the right challenge for the right read. As you track streaks, earn XP, and climb from Fish to GTO Wizard, you\'ll keep improving while staying motivated every step of the way.',
+                'It\'s designed for grinders chasing an edge, but it\'s also welcoming enough for beginners who want to build one. Think of it as your poker training companion: part coach, part challenge, and part obsession in the best possible way.',
+              ].map((paragraph, i) => (
+                <p key={i} style={{
+                  margin: 0,
+                  fontSize: isMobile ? 13 : 14, color: colors.textSecondary, lineHeight: 1.6, fontWeight: 500,
                 }}>
-                  <span style={{ fontSize: isMobile ? 16 : 18, lineHeight: 1.4, flexShrink: 0 }}>
-                    {item.icon}
-                  </span>
-                  <span style={{
-                    fontSize: isMobile ? 13 : 14, color: colors.textSecondary, lineHeight: 1.5, fontWeight: 500,
-                  }}>
-                    {item.text}
-                  </span>
-                </div>
+                  {paragraph}
+                </p>
               ))}
             </div>
           </div>
