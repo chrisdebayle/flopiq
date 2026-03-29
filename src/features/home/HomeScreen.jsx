@@ -122,152 +122,162 @@ export default function HomeScreen({ user, persistent, onStartDrills, onLogout }
         Start Drills
       </button>
 
-      {/* What is FlopIQ */}
-      <div style={{
-        background: 'rgba(255,255,255,0.03)',
-        borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)',
-        marginBottom: isMobile ? 20 : 28,
-        overflow: 'hidden',
-      }}>
-        <button onClick={() => {
-          const next = !aboutOpen;
-          setAboutOpen(next);
-          if (!next) localStorage.setItem('flopiq_seen_about', '1');
-        }} style={{
-          width: '100%', display: 'flex', alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: isMobile ? '12px 14px' : '14px 18px',
-          background: 'none', border: 'none', cursor: 'pointer',
-        }}>
-          <span style={{
-            fontSize: isMobile ? 14 : 15, fontWeight: 800, color: '#fff',
-            letterSpacing: 0.3,
-          }}>
-            What is FlopIQ?
-          </span>
-          <span style={{
-            fontSize: 14, color: '#556', fontWeight: 600,
-            transform: aboutOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform 0.2s ease',
-          }}>
-            &#9662;
-          </span>
-        </button>
-
-        <div style={{
-          maxHeight: aboutOpen ? 400 : 0,
-          opacity: aboutOpen ? 1 : 0,
-          overflow: 'hidden',
-          transition: 'max-height 0.3s ease, opacity 0.25s ease',
-        }}>
-          <div style={{
-            padding: isMobile ? '0 14px 16px' : '0 18px 20px',
-            display: 'flex', flexDirection: 'column', gap: isMobile ? 10 : 12,
-          }}>
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginBottom: 4 }} />
-
-            {[
-              { icon: '\u{1F3AF}', text: `${SCENARIOS.length} scenarios across 5 opponent archetypes. Read your opponent. Exploit their leaks. Make the right decision.` },
-              { icon: '\u{1F525}', text: 'Face Nits, Calling Stations, TAGs, LAGs, and ABC players — each demands a different strategy.' },
-              { icon: '\u{1F4C8}', text: 'Track streaks, earn XP, and climb the ranks from Fish to GTO Wizard.' },
-              { icon: '\u{1F9E0}', text: 'Built for grinders who want an edge — and beginners ready to build one.' },
-            ].map((item, i) => (
-              <div key={i} style={{
-                display: 'flex', alignItems: 'flex-start', gap: isMobile ? 10 : 12,
-              }}>
-                <span style={{ fontSize: isMobile ? 16 : 18, lineHeight: 1.4, flexShrink: 0 }}>
-                  {item.icon}
-                </span>
-                <span style={{
-                  fontSize: isMobile ? 13 : 14, color: '#b0bec5', lineHeight: 1.5, fontWeight: 500,
-                }}>
-                  {item.text}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Player Archetypes dropdown */}
-      <div style={{
-        background: 'rgba(255,255,255,0.04)',
-        borderRadius: 14,
-        border: '1px solid rgba(255,255,255,0.06)',
-        marginBottom: isMobile ? 16 : 24,
-        overflow: 'hidden',
-      }}>
-        <button onClick={() => setArchetypesOpen(!archetypesOpen)} style={{
-          width: '100%', display: 'flex', alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: isMobile ? '12px 14px' : '14px 18px',
-          background: 'none', border: 'none', cursor: 'pointer',
-        }}>
-          <span style={{
-            fontSize: isMobile ? 14 : 15, fontWeight: 800, color: '#fff',
-            letterSpacing: 0.3,
-          }}>
-            What are Player Archetypes?
-          </span>
-          <span style={{
-            fontSize: 14, color: '#556', fontWeight: 600,
-            transform: archetypesOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform 0.2s ease',
-          }}>
-            &#9662;
-          </span>
-        </button>
-
-        <div style={{
-          maxHeight: archetypesOpen ? 600 : 0,
-          opacity: archetypesOpen ? 1 : 0,
-          overflow: 'hidden',
-          transition: 'max-height 0.3s ease, opacity 0.25s ease',
-        }}>
-          <div style={{
-            padding: isMobile ? '0 14px 16px' : '0 18px 20px',
-            display: 'flex', flexDirection: 'column', gap: isMobile ? 8 : 10,
-          }}>
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginBottom: 4 }} />
-
-            {Object.entries(OPPONENT_ARCHETYPES).map(([key, arch]) => (
-              <div key={key} style={{
-                display: 'flex', alignItems: 'flex-start', gap: isMobile ? 10 : 12,
-                padding: isMobile ? '8px 10px' : '10px 14px',
-                background: `${arch.color}0a`,
-                borderRadius: 10,
-                border: `1px solid ${arch.color}22`,
-              }}>
-                <span style={{ fontSize: isMobile ? 20 : 24, lineHeight: 1.2, flexShrink: 0 }}>
-                  {arch.emoji}
-                </span>
-                <div style={{ flex: 1 }}>
-                  <div style={{
-                    fontSize: isMobile ? 13 : 14, fontWeight: 700, color: arch.color,
-                    marginBottom: 2,
-                  }}>
-                    {arch.label}
-                  </div>
-                  <div style={{
-                    fontSize: isMobile ? 12 : 13, color: '#b0bec5', lineHeight: 1.4,
-                  }}>
-                    {arch.description}
-                  </div>
-                  <div style={{
-                    fontSize: isMobile ? 11 : 12, color: '#78909c', lineHeight: 1.4,
-                    marginTop: 3, fontStyle: 'italic',
-                  }}>
-                    {arch.spotting}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {/* Leaderboard */}
       <Leaderboard userId={user.id} isMobile={isMobile} />
+
+      {/* FAQs */}
+      <div style={{ marginTop: isMobile ? 16 : 24 }}>
+        <span style={{
+          fontSize: 17, fontWeight: 800, color: '#fff',
+          letterSpacing: 0.3,
+        }}>
+          FAQs
+        </span>
+
+        {/* What is FlopIQ */}
+        <div style={{
+          background: 'rgba(255,255,255,0.03)',
+          borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)',
+          marginTop: isMobile ? 10 : 14,
+          overflow: 'hidden',
+        }}>
+          <button onClick={() => {
+            const next = !aboutOpen;
+            setAboutOpen(next);
+            if (!next) localStorage.setItem('flopiq_seen_about', '1');
+          }} style={{
+            width: '100%', display: 'flex', alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: isMobile ? '12px 14px' : '14px 18px',
+            background: 'none', border: 'none', cursor: 'pointer',
+          }}>
+            <span style={{
+              fontSize: isMobile ? 14 : 15, fontWeight: 800, color: '#fff',
+              letterSpacing: 0.3,
+            }}>
+              What is FlopIQ?
+            </span>
+            <span style={{
+              fontSize: 14, color: '#556', fontWeight: 600,
+              transform: aboutOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s ease',
+            }}>
+              &#9662;
+            </span>
+          </button>
+
+          <div style={{
+            maxHeight: aboutOpen ? 400 : 0,
+            opacity: aboutOpen ? 1 : 0,
+            overflow: 'hidden',
+            transition: 'max-height 0.3s ease, opacity 0.25s ease',
+          }}>
+            <div style={{
+              padding: isMobile ? '0 14px 16px' : '0 18px 20px',
+              display: 'flex', flexDirection: 'column', gap: isMobile ? 10 : 12,
+            }}>
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginBottom: 4 }} />
+
+              {[
+                { icon: '\u{1F3AF}', text: `${SCENARIOS.length} scenarios across 5 opponent archetypes. Read your opponent. Exploit their leaks. Make the right decision.` },
+                { icon: '\u{1F525}', text: 'Face Nits, Calling Stations, TAGs, LAGs, and ABC players — each demands a different strategy.' },
+                { icon: '\u{1F4C8}', text: 'Track streaks, earn XP, and climb the ranks from Fish to GTO Wizard.' },
+                { icon: '\u{1F9E0}', text: 'Built for grinders who want an edge — and beginners ready to build one.' },
+              ].map((item, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'flex-start', gap: isMobile ? 10 : 12,
+                }}>
+                  <span style={{ fontSize: isMobile ? 16 : 18, lineHeight: 1.4, flexShrink: 0 }}>
+                    {item.icon}
+                  </span>
+                  <span style={{
+                    fontSize: isMobile ? 13 : 14, color: '#b0bec5', lineHeight: 1.5, fontWeight: 500,
+                  }}>
+                    {item.text}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Player Archetypes dropdown */}
+        <div style={{
+          background: 'rgba(255,255,255,0.04)',
+          borderRadius: 14,
+          border: '1px solid rgba(255,255,255,0.06)',
+          marginTop: isMobile ? 8 : 12,
+          overflow: 'hidden',
+        }}>
+          <button onClick={() => setArchetypesOpen(!archetypesOpen)} style={{
+            width: '100%', display: 'flex', alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: isMobile ? '12px 14px' : '14px 18px',
+            background: 'none', border: 'none', cursor: 'pointer',
+          }}>
+            <span style={{
+              fontSize: isMobile ? 14 : 15, fontWeight: 800, color: '#fff',
+              letterSpacing: 0.3,
+            }}>
+              What are Player Archetypes?
+            </span>
+            <span style={{
+              fontSize: 14, color: '#556', fontWeight: 600,
+              transform: archetypesOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s ease',
+            }}>
+              &#9662;
+            </span>
+          </button>
+
+          <div style={{
+            maxHeight: archetypesOpen ? 600 : 0,
+            opacity: archetypesOpen ? 1 : 0,
+            overflow: 'hidden',
+            transition: 'max-height 0.3s ease, opacity 0.25s ease',
+          }}>
+            <div style={{
+              padding: isMobile ? '0 14px 16px' : '0 18px 20px',
+              display: 'flex', flexDirection: 'column', gap: isMobile ? 8 : 10,
+            }}>
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginBottom: 4 }} />
+
+              {Object.entries(OPPONENT_ARCHETYPES).map(([key, arch]) => (
+                <div key={key} style={{
+                  display: 'flex', alignItems: 'flex-start', gap: isMobile ? 10 : 12,
+                  padding: isMobile ? '8px 10px' : '10px 14px',
+                  background: `${arch.color}0a`,
+                  borderRadius: 10,
+                  border: `1px solid ${arch.color}22`,
+                }}>
+                  <span style={{ fontSize: isMobile ? 20 : 24, lineHeight: 1.2, flexShrink: 0 }}>
+                    {arch.emoji}
+                  </span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{
+                      fontSize: isMobile ? 13 : 14, fontWeight: 700, color: arch.color,
+                      marginBottom: 2,
+                    }}>
+                      {arch.label}
+                    </div>
+                    <div style={{
+                      fontSize: isMobile ? 12 : 13, color: '#b0bec5', lineHeight: 1.4,
+                    }}>
+                      {arch.description}
+                    </div>
+                    <div style={{
+                      fontSize: isMobile ? 11 : 12, color: '#78909c', lineHeight: 1.4,
+                      marginTop: 3, fontStyle: 'italic',
+                    }}>
+                      {arch.spotting}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

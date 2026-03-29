@@ -11,6 +11,15 @@ export default function useAuth() {
     let mounted = true;
 
     async function init() {
+      // Safety timeout — never stay on "Loading..." forever
+      const timeout = setTimeout(() => {
+        if (mounted && loading) {
+          console.warn('Auth init timeout — clearing session');
+          supabase?.auth.signOut().catch(() => {});
+          setLoading(false);
+        }
+      }, 5000);
+
       try {
         if (!supabase) { setLoading(false); return; }
 
@@ -23,13 +32,16 @@ export default function useAuth() {
               displayName: profile.display_name || session.user.user_metadata?.display_name || 'Player',
             });
           } else {
-            // Profile was deleted (e.g. duplicate cleanup) — sign out stale session
-            await supabase.auth.signOut();
+            // Profile was deleted or never created (e.g. failed reclaim) — sign out stale session
+            try { await supabase.auth.signOut(); } catch { /* ignore signOut errors */ }
           }
         }
       } catch (err) {
         console.warn('Auth init error:', err.message);
+        // Clear potentially broken session
+        try { await supabase?.auth.signOut(); } catch { /* ignore */ }
       } finally {
+        clearTimeout(timeout);
         if (mounted) setLoading(false);
       }
     }
