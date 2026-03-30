@@ -149,6 +149,9 @@ export default function HomeScreen({ user, persistent, breakdown = {}, onStartDr
         Start Drills
       </button>
 
+      {/* Leaderboard */}
+      <Leaderboard userId={user.id} isMobile={isMobile} />
+
       {/* Drill Analytics section label */}
       {(hasStreetData || hasOpponentData) && (
         <span style={{
@@ -310,9 +313,6 @@ export default function HomeScreen({ user, persistent, breakdown = {}, onStartDr
           })}
         </div>
       </div>
-
-      {/* Leaderboard */}
-      <Leaderboard userId={user.id} isMobile={isMobile} />
 
       {/* FAQs */}
       <div style={{ marginTop: isMobile ? 16 : 24 }}>
